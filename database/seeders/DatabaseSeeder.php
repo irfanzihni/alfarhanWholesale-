@@ -57,9 +57,9 @@ class DatabaseSeeder extends Seeder
         // 2. Seed Coupons
         $coupons = [
             [
-                'code' => 'WELCOME10',
-                'discount_amount' => 10.00,
-                'discount_type' => 'fixed',
+                'code' => 'WELCOME20',
+                'discount_amount' => 20.00,
+                'discount_type' => 'percent',
                 'min_spend' => 30.00,
                 'is_active' => true,
             ],

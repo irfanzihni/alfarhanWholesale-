@@ -2,36 +2,36 @@
 
 @section('content')
 <!-- Hero Section -->
-<section class="bg-gradient-to-br from-emerald-800 to-emerald-950 text-white overflow-hidden py-16 md:py-24">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-        <div class="space-y-6">
+<section class="bg-gradient-to-br from-emerald-800 to-emerald-950 text-white overflow-hidden py-12 md:py-24">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-center">
+        <div class="space-y-5 text-center md:text-left">
             <span class="inline-block bg-emerald-700/60 border border-emerald-500/30 text-emerald-300 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider">
                 100% Organic & Blessed Nutrition
             </span>
-            <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight leading-tight serif-font">
-                Dapatkan makanan sunnah dan wangian <br>dengan <span class="text-emerald-400 font-serif italic">harga borong</span>
+            <h1 class="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight leading-tight serif-font">
+                Dapatkan makanan sunnah dan wangian <br class="hidden md:block">dengan <span class="text-emerald-400 font-serif italic">harga borong</span>
             </h1>
-            <p class="text-lg text-emerald-100/80 leading-relaxed max-w-lg">
+            <p class="text-base md:text-lg text-emerald-100/80 leading-relaxed max-w-lg mx-auto md:mx-0">
                 Terokai pilihan produk sunnah kami — kurma premium, madu asli, wangian oud, bakhoor eksklusif, dan banyak lagi dengan harga borong.
             </p>
-            <div class="flex flex-wrap gap-4 pt-2">
+            <div class="flex flex-col sm:flex-row justify-center md:justify-start gap-3 pt-2">
                 <a href="{{ route('shop.index') }}" 
-                   class="bg-white text-emerald-900 font-bold px-8 py-3.5 rounded-full shadow-lg hover:bg-emerald-50 transition-all hover:scale-105">
+                   class="bg-white text-emerald-900 font-bold px-8 py-3.5 rounded-full shadow-lg hover:bg-emerald-50 transition-all hover:scale-105 text-center">
                     Browse Shop
                 </a>
                 <a href="#featured-products" 
-                   class="border border-emerald-400/40 text-white font-semibold px-8 py-3.5 rounded-full hover:bg-white/10 transition-colors">
+                   class="border border-emerald-400/40 text-white font-semibold px-8 py-3.5 rounded-full hover:bg-white/10 transition-colors text-center">
                     Best Sellers
                 </a>
             </div>
         </div>
         <div class="relative flex justify-center">
             <!-- Decorative circle -->
-            <div class="absolute w-72 h-72 md:w-96 md:h-96 rounded-full bg-emerald-800/40 blur-3xl -z-10"></div>
+            <div class="absolute w-64 h-64 md:w-96 md:h-96 rounded-full bg-emerald-800/40 blur-3xl -z-10"></div>
             <!-- Elegant Sunnah Food Collage -->
-            <div class="bg-white/5 border border-white/10 p-4 rounded-3xl backdrop-blur-md shadow-2xl w-full max-w-md">
-                <img src="/images/products/ajwa_dates.jpg" alt="Premium Ajwa Dates" class="rounded-2xl object-cover w-full h-80 shadow-md">
-                <div class="mt-4 flex justify-between items-center text-emerald-100 text-sm font-medium px-2">
+            <div class="bg-white/5 border border-white/10 p-3 md:p-4 rounded-3xl backdrop-blur-md shadow-2xl w-full max-w-sm">
+                <img src="/images/products/ajwa_dates.jpg" alt="Premium Ajwa Dates" class="rounded-2xl object-cover w-full h-56 md:h-80 shadow-md">
+                <div class="mt-3 md:mt-4 flex justify-between items-center text-emerald-100 text-sm font-medium px-2">
                     <span>✨ Blessed Al-Madinah Ajwa Dates</span>
                     <span class="text-emerald-300 font-bold">RM25.00 / 500g</span>
                 </div>
@@ -43,22 +43,25 @@
 <!-- Claim Coupon Section -->
 @auth
     @php
-        $welcomeCoupon = \App\Models\Coupon::where('code', 'WELCOME10')->first();
+        $welcomeCoupon = \App\Models\Coupon::where('code', 'WELCOME20')->first();
+        if (!$welcomeCoupon) {
+            $welcomeCoupon = \App\Models\Coupon::where('discount_type', 'percent')->first();
+        }
         $isClaimed = $welcomeCoupon ? \App\Models\UserCoupon::where('user_id', auth()->id())->where('coupon_id', $welcomeCoupon->id)->exists() : false;
     @endphp
     @if($welcomeCoupon && !$isClaimed)
-        <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12">
-            <div class="bg-emerald-50 border border-emerald-200 p-6 md:p-8 rounded-3xl shadow-sm flex flex-col md:flex-row justify-between items-center gap-6">
+        <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-10 md:mt-12">
+            <div class="bg-emerald-50 border border-emerald-200 p-5 md:p-8 rounded-3xl shadow-sm flex flex-col md:flex-row justify-between items-center gap-6">
                 <div>
-                    <h3 class="text-xl font-bold text-emerald-950">Claim Your Welcome Gift! 🎁</h3>
-                    <p class="text-slate-600 text-sm mt-1">Get an instant <strong>RM10.00 off</strong> coupon for your first purchase of RM30.00 or more.</p>
+                    <h3 class="text-xl font-bold text-emerald-950">Tuntut Hadiah Selamat Datang! 🎁</h3>
+                    <p class="text-slate-600 text-sm mt-1">Dapatkan <strong>diskaun 20%</strong> untuk pembelian pertama anda dengan minimum belanja RM30.00.</p>
                 </div>
-                <form action="{{ route('coupon.claim') }}" method="POST">
+                <form action="{{ route('coupon.claim') }}" method="POST" class="w-full md:w-auto">
                     @csrf
                     <input type="hidden" name="coupon_id" value="{{ $welcomeCoupon->id }}">
                     <button type="submit" 
-                            class="bg-emerald-700 hover:bg-emerald-800 text-white font-bold px-6 py-3 rounded-full shadow-md hover:shadow-lg transition-all text-sm">
-                        Claim Welcome Coupon
+                            class="w-full md:w-auto bg-emerald-700 hover:bg-emerald-800 text-white font-bold px-6 py-3 rounded-full shadow-md hover:shadow-lg transition-all text-sm">
+                        Tuntut Kupon Selamat Datang
                     </button>
                 </form>
             </div>
@@ -120,7 +123,7 @@
     </div>
 
     <!-- Product Grid -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+    <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8">
         @foreach($featuredProducts as $product)
             <div class="bg-white border border-emerald-100 rounded-2xl shadow-xs overflow-hidden hover:shadow-lg transition-all flex flex-col group">
                 <div class="relative overflow-hidden bg-slate-100 aspect-square">
@@ -134,7 +137,7 @@
                     @endif
                 </div>
                 
-                <div class="p-6 flex-grow flex flex-col justify-between">
+                <div class="p-4 md:p-6 flex-grow flex flex-col justify-between">
                     <div class="space-y-1.5">
                         <span class="text-xs font-bold text-emerald-700 uppercase tracking-wider">{{ ucfirst($product->category) }}</span>
                         <h3 class="font-bold text-slate-800 text-base line-clamp-1 group-hover:text-emerald-800 transition-colors">
@@ -169,7 +172,7 @@
 
 <!-- Values / Trust Blocks -->
 <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 border-t border-emerald-100/60">
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
         <div class="text-center space-y-3 p-6 rounded-2xl bg-white border border-emerald-50 shadow-xs">
             <div class="w-12 h-12 bg-emerald-50 rounded-full flex items-center justify-center mx-auto text-emerald-700 text-xl font-bold">🌿</div>
             <h4 class="font-bold text-slate-800 text-sm">100% Organic</h4>

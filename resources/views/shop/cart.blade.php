@@ -14,25 +14,25 @@
             </a>
         </div>
     @else
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8 items-start">
             
             <!-- Cart Items List (Left Column) -->
-            <div class="lg:col-span-2 space-y-6">
+            <div class="lg:col-span-2 space-y-4 md:space-y-6">
                 <div class="bg-white border border-emerald-100 rounded-2xl shadow-xs overflow-hidden">
-                    <table class="w-full text-left border-collapse">
+                    {{-- Desktop Table --}}
+                    <table class="hidden md:table w-full text-left border-collapse">
                         <thead>
                             <tr class="bg-emerald-50/60 border-b border-emerald-100 text-slate-600 font-bold text-xs uppercase tracking-wider">
-                                <th class="p-6">Product Details</th>
-                                <th class="p-6 text-center">Quantity</th>
-                                <th class="p-6 text-right">Price</th>
-                                <th class="p-6 text-right">Subtotal</th>
+                                <th class="p-5 pl-6">Product Details</th>
+                                <th class="p-5 text-center">Quantity</th>
+                                <th class="p-5 text-right">Price</th>
+                                <th class="p-5 text-right pr-6">Subtotal</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100">
                             @foreach($cartItems as $item)
                                 <tr>
-                                    <!-- Product & Variant info -->
-                                    <td class="p-6 flex items-center gap-4">
+                                    <td class="p-5 pl-6 flex items-center gap-4">
                                         <div class="w-16 h-16 rounded-lg bg-slate-50 border border-slate-100 overflow-hidden shrink-0">
                                             <img src="{{ $item->product->image_url }}" alt="{{ $item->product->name }}" class="w-full h-full object-cover">
                                         </div>
@@ -53,9 +53,7 @@
                                             </form>
                                         </div>
                                     </td>
-
-                                    <!-- Quantity Adjustment Form -->
-                                    <td class="p-6">
+                                    <td class="p-5">
                                         <form action="{{ route('cart.update', $item->id) }}" method="POST" class="flex items-center justify-center gap-1.5 max-w-[120px] mx-auto">
                                             @csrf
                                             <input type="number" name="quantity" value="{{ $item->quantity }}" min="1" required
@@ -65,20 +63,59 @@
                                             </button>
                                         </form>
                                     </td>
-
-                                    <!-- Unit Price -->
-                                    <td class="p-6 text-right font-medium text-slate-600 text-sm">
+                                    <td class="p-5 text-right font-medium text-slate-600 text-sm">
                                         RM{{ number_format($item->unit_price, 2) }}
                                     </td>
-
-                                    <!-- Line Subtotal -->
-                                    <td class="p-6 text-right font-bold text-slate-800 text-sm">
+                                    <td class="p-5 pr-6 text-right font-bold text-slate-800 text-sm">
                                         RM{{ number_format($item->subtotal, 2) }}
                                     </td>
                                 </tr>
                             @endforeach
                         </tbody>
                     </table>
+
+                    {{-- Mobile Cards --}}
+                    <div class="md:hidden divide-y divide-slate-100">
+                        @foreach($cartItems as $item)
+                            <div class="p-4 flex gap-4 items-start">
+                                <div class="w-20 h-20 rounded-xl bg-slate-50 border border-slate-100 overflow-hidden shrink-0">
+                                    <img src="{{ $item->product->image_url }}" alt="{{ $item->product->name }}" class="w-full h-full object-cover">
+                                </div>
+                                <div class="flex-grow space-y-2">
+                                    <div class="flex justify-between items-start">
+                                        <div>
+                                            <h4 class="font-bold text-slate-800 text-sm">
+                                                <a href="{{ route('shop.show', $item->product_id) }}">{{ $item->product->name }}</a>
+                                            </h4>
+                                            @if($item->product_variation_id && $item->variation)
+                                                <span class="inline-block bg-slate-100 text-slate-600 text-[10px] font-bold px-2 py-0.5 rounded-md mt-1">
+                                                    {{ $item->variation->name }}: {{ $item->variation->value }}
+                                                </span>
+                                            @endif
+                                        </div>
+                                        <span class="font-bold text-emerald-800 text-sm">RM{{ number_format($item->subtotal, 2) }}</span>
+                                    </div>
+                                    <p class="text-xs text-slate-500">RM{{ number_format($item->unit_price, 2) }} / unit</p>
+                                    <div class="flex items-center justify-between pt-1">
+                                        <form action="{{ route('cart.update', $item->id) }}" method="POST" class="flex items-center gap-2">
+                                            @csrf
+                                            <input type="number" name="quantity" value="{{ $item->quantity }}" min="1" required
+                                                   class="w-14 px-2 py-2 border border-slate-200 rounded-lg text-center text-xs focus:outline-none focus:ring-2 focus:ring-emerald-600">
+                                            <button type="submit" class="bg-emerald-50 text-emerald-800 hover:bg-emerald-700 hover:text-white p-2 rounded-lg transition-all">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+                                            </button>
+                                        </form>
+                                        <form action="{{ route('cart.remove', $item->id) }}" method="POST">
+                                            @csrf
+                                            <button type="submit" class="text-xs text-red-500 hover:text-red-700 font-semibold transition-colors py-2">
+                                                Padam
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
                 </div>
 
                 <!-- COUPON CLAIMING MODULE (Sunnah Bites Specific Promotion) -->

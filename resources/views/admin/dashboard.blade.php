@@ -9,7 +9,7 @@
 <div class="bg-gradient-to-r from-emerald-800 to-emerald-950 text-white rounded-3xl p-6 md:p-8 shadow-md mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
     <div>
         <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight">Assalamu Alaikum, {{ $user->name }}</h1>
-        <p class="text-emerald-200/80 text-sm mt-1">Welcome to the SunnahBites management console. You have authorization for the role of <strong class="text-white underline">{{ strtoupper($user->role) }}</strong>.</p>
+        <p class="text-emerald-200/80 text-sm mt-1">Welcome to the AlfarhanWholesale management console. You have authorization for the role of <strong class="text-white underline">{{ strtoupper($user->role) }}</strong>.</p>
     </div>
     <div class="bg-emerald-700/50 border border-emerald-500/25 px-4 py-2 rounded-2xl text-xs font-bold uppercase tracking-wider">
         Shift Status: Active

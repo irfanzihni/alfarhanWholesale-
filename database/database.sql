@@ -239,7 +239,7 @@ CREATE TABLE `coupons` (
 
 -- Dumping data for table `coupons`
 INSERT INTO `coupons` (`id`, `code`, `discount_amount`, `discount_type`, `min_spend`, `is_active`, `created_at`, `updated_at`) VALUES
-(1, 'WELCOME10', 10, 'fixed', 30, 1, '2026-06-17 03:50:29', '2026-06-17 03:50:29'),
+(1, 'WELCOME20', 20, 'percent', 30, 1, '2026-06-17 03:50:29', NOW()),
 (2, 'SUNNAH20', 20, 'percent', 50, 1, '2026-06-17 03:50:29', '2026-06-17 03:50:29');
 
 -- --------------------------------------------------------

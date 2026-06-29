@@ -12,8 +12,8 @@
     </nav>
 
     <!-- Main Product Block -->
-    <div class="bg-white rounded-3xl border border-emerald-100 shadow-sm overflow-hidden p-6 md:p-12">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
+    <div class="bg-white rounded-3xl border border-emerald-100 shadow-sm overflow-hidden p-4 md:p-12">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-12">
             
             <!-- Left: Product Image -->
             <div class="space-y-4">

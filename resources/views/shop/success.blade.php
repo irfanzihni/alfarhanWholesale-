@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="max-w-3xl mx-auto my-16 bg-white border border-emerald-100 rounded-3xl shadow-xl overflow-hidden p-8 md:p-12 space-y-8">
+<div class="max-w-3xl mx-auto my-8 md:my-16 bg-white border border-emerald-100 rounded-3xl shadow-xl overflow-hidden p-5 md:p-12 space-y-6 md:space-y-8">
     <!-- Icon Header -->
     <div class="text-center space-y-4">
         <div class="w-20 h-20 bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center mx-auto text-4xl animate-bounce">
@@ -9,7 +9,7 @@
         </div>
         <h1 class="text-3xl font-extrabold text-slate-900 serif-font">Order Placed Successfully!</h1>
         <p class="text-sm text-slate-500 font-medium max-w-md mx-auto">
-            Thank you for shopping at SunnahBites. We have received your order, and our storekeeper is preparing it for delivery.
+            Terima kasih kerana membeli-belah di AlfarhanWholesale. Pesanan anda telah diterima dan penyimpan stok kami sedang menyediakan penghantaran.
         </p>
     </div>
 

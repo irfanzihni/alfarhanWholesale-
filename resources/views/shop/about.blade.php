@@ -13,7 +13,7 @@
             Siapa Kami
         </span>
         <h1 class="text-3xl md:text-5xl font-extrabold tracking-tight leading-tight serif-font mb-6">
-            Tentang <span class="text-emerald-400 font-serif italic">Alfarhan Trading</span>
+            Tentang <span class="text-emerald-400 font-serif italic">AlfarhanWholesale</span>
         </h1>
         <p class="text-emerald-100/80 text-lg leading-relaxed max-w-2xl mx-auto">
             Pemborong produk sunnah pilihan — kurma, madu, wangian, dan bakhoor — terus dari sumber terpercaya ke tangan anda dengan harga borong yang berpatutan.
@@ -22,54 +22,63 @@
 </section>
 
 {{-- Who We Are --}}
-<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
+<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-20">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-16 items-center">
         <div class="space-y-6">
             <div class="inline-flex items-center gap-2 bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider">
                 <span>🌿</span> Kisah Kami
             </div>
-            <h2 class="text-3xl font-extrabold text-emerald-950 serif-font leading-snug">
+            <h2 class="text-2xl md:text-3xl font-extrabold text-emerald-950 serif-font leading-snug">
                 Dipercayai oleh ribuan pembeli sejak bertahun-tahun
             </h2>
-            <p class="text-slate-600 leading-relaxed">
-                Alfarhan Trading bermula dengan satu matlamat mudah: menyediakan produk sunnah berkualiti tinggi kepada komuniti Muslim Malaysia dengan harga borong yang berpatutan. Kami percaya bahawa setiap Muslim berhak mendapat akses kepada produk yang baik, halal, dan berkat.
+            <p class="text-slate-600 leading-relaxed text-sm md:text-base">
+                AlfarhanWholesale bermula dengan satu matlamat mudah: menyediakan produk sunnah berkualiti tinggi kepada komuniti Muslim Malaysia dengan harga borong yang berpatutan. Kami percaya bahawa setiap Muslim berhak mendapat akses kepada produk yang baik, halal, dan berkat.
             </p>
-            <p class="text-slate-600 leading-relaxed">
+            <p class="text-slate-600 leading-relaxed text-sm md:text-base">
                 Dari kurma pilihan Al-Madinah hinggalah wangian oud eksklusif dan bakhoor terbaik, setiap produk kami dipilih dengan teliti untuk memastikan kualiti dan kesahihannya. Kami menjadi jambatan antara pembekal terpercaya dan pelanggan setia kami.
             </p>
-            <div class="flex flex-wrap gap-4 pt-2">
+            <div class="flex flex-col sm:flex-row gap-3 pt-2">
                 <a href="{{ route('shop.index') }}"
-                   class="bg-emerald-700 hover:bg-emerald-800 text-white font-bold px-6 py-3 rounded-full shadow-md hover:shadow-lg transition-all text-sm">
+                   class="bg-emerald-700 hover:bg-emerald-800 text-white font-bold px-6 py-3 rounded-full shadow-md hover:shadow-lg transition-all text-sm text-center">
                     Lihat Produk Kami
                 </a>
                 <a href="mailto:alfarhanwholesale@gmail.com"
-                   class="border border-emerald-600 text-emerald-700 hover:bg-emerald-50 font-semibold px-6 py-3 rounded-full transition-colors text-sm">
+                   class="border border-emerald-600 text-emerald-700 hover:bg-emerald-50 font-semibold px-6 py-3 rounded-full transition-colors text-sm text-center">
                     Hubungi Kami
                 </a>
             </div>
         </div>
 
-        {{-- Stats Cards --}}
-        <div class="grid grid-cols-2 gap-6">
-            <div class="bg-white border border-emerald-100 rounded-2xl p-6 shadow-sm text-center space-y-2 hover:shadow-md hover:-translate-y-1 transition-all">
-                <div class="w-12 h-12 bg-emerald-50 rounded-full flex items-center justify-center mx-auto text-2xl">🌴</div>
-                <div class="text-3xl font-extrabold text-emerald-800">5+</div>
-                <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Kategori Produk</div>
+        {{-- Logo + Stats --}}
+        <div class="space-y-6">
+            {{-- Logo Display --}}
+            <div class="flex justify-center">
+                <div class="bg-white border-2 border-emerald-100 rounded-3xl p-8 shadow-lg flex flex-col items-center gap-4 w-full max-w-sm mx-auto">
+                    <img src="/images/logo.png" alt="AlfarhanWholesale Logo" class="w-48 h-48 md:w-56 md:h-56 object-contain">
+                    <div class="text-center">
+                        <p class="text-xl font-extrabold text-emerald-900">Alfarhan<span class="text-emerald-500 font-serif">Wholesale</span></p>
+                        <p class="text-xs text-slate-400 tracking-widest uppercase mt-1">Al-Farhan Trade & Wholesale</p>
+                    </div>
+                </div>
             </div>
-            <div class="bg-white border border-emerald-100 rounded-2xl p-6 shadow-sm text-center space-y-2 hover:shadow-md hover:-translate-y-1 transition-all">
-                <div class="w-12 h-12 bg-emerald-50 rounded-full flex items-center justify-center mx-auto text-2xl">🤝</div>
-                <div class="text-3xl font-extrabold text-emerald-800">500+</div>
-                <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Pelanggan Borong</div>
-            </div>
-            <div class="bg-white border border-emerald-100 rounded-2xl p-6 shadow-sm text-center space-y-2 hover:shadow-md hover:-translate-y-1 transition-all">
-                <div class="w-12 h-12 bg-emerald-50 rounded-full flex items-center justify-center mx-auto text-2xl">📦</div>
-                <div class="text-3xl font-extrabold text-emerald-800">1000+</div>
-                <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Pesanan Diproses</div>
-            </div>
-            <div class="bg-white border border-emerald-100 rounded-2xl p-6 shadow-sm text-center space-y-2 hover:shadow-md hover:-translate-y-1 transition-all">
-                <div class="w-12 h-12 bg-emerald-50 rounded-full flex items-center justify-center mx-auto text-2xl">⭐</div>
-                <div class="text-3xl font-extrabold text-emerald-800">4.9</div>
-                <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Penilaian Pelanggan</div>
+            {{-- Stats Grid --}}
+            <div class="grid grid-cols-2 gap-4">
+                <div class="bg-white border border-emerald-100 rounded-2xl p-4 shadow-sm text-center space-y-1 hover:shadow-md hover:-translate-y-1 transition-all">
+                    <div class="text-2xl font-extrabold text-emerald-800">5+</div>
+                    <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Kategori Produk</div>
+                </div>
+                <div class="bg-white border border-emerald-100 rounded-2xl p-4 shadow-sm text-center space-y-1 hover:shadow-md hover:-translate-y-1 transition-all">
+                    <div class="text-2xl font-extrabold text-emerald-800">500+</div>
+                    <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Pelanggan Borong</div>
+                </div>
+                <div class="bg-white border border-emerald-100 rounded-2xl p-4 shadow-sm text-center space-y-1 hover:shadow-md hover:-translate-y-1 transition-all">
+                    <div class="text-2xl font-extrabold text-emerald-800">1000+</div>
+                    <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Pesanan Diproses</div>
+                </div>
+                <div class="bg-white border border-emerald-100 rounded-2xl p-4 shadow-sm text-center space-y-1 hover:shadow-md hover:-translate-y-1 transition-all">
+                    <div class="text-2xl font-extrabold text-emerald-800">4.9 ⭐</div>
+                    <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Penilaian Pelanggan</div>
+                </div>
             </div>
         </div>
     </div>
