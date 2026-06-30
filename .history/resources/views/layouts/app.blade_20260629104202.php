@@ -37,7 +37,7 @@
 
     <!-- Top Promo bar -->
     <div class="bg-emerald-950 text-emerald-100 text-xs py-2 px-4 text-center font-medium tracking-wide">
-        Daftar
+        ✨ Daftar sekarang dan dapatkan <strong>diskaun 20%</strong> untuk pembelian pertama anda! ✨
     </div>
 
     <!-- Main Navigation Header -->
@@ -137,7 +137,7 @@
                 <form action="{{ route('shop.index') }}" method="GET" class="relative">
                     <input type="text" name="search" placeholder="Cari produk sunnah..." 
                            class="w-full pl-10 pr-4 py-3 border border-emerald-100 rounded-full bg-emerald-50/50 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:bg-white transition-all">
-                    <div class="absolute left-3 top-2 text-emerald-600">
+                    <div class="absolute left-3 top-3.5 text-emerald-600">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                     </div>
                 </form>
