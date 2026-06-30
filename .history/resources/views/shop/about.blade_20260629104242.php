@@ -62,7 +62,7 @@
                 </div>
             </div>
             {{-- Stats Grid --}}
-            <!--<div class="grid grid-cols-2 gap-4">
+            <div class="grid grid-cols-2 gap-4">
                 <div class="bg-white border border-emerald-100 rounded-2xl p-4 shadow-sm text-center space-y-1 hover:shadow-md hover:-translate-y-1 transition-all">
                     <div class="text-2xl font-extrabold text-emerald-800">5+</div>
                     <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Kategori Produk</div>
@@ -80,7 +80,7 @@
                     <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Penilaian Pelanggan</div>
                 </div>
             </div>
-        </div>-->
+        </div>
     </div>
 </section>
 
