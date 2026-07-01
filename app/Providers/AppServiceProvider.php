@@ -11,7 +11,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // Hostinger serves Laravel from project root (not /public).
+        $this->app->usePublicPath(base_path());
     }
 
     /**
