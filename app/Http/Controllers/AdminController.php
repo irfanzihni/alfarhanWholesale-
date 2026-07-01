@@ -93,7 +93,7 @@ class AdminController extends Controller
         $imageUrl = '/images/products/placeholder.jpg';
         if ($request->hasFile('image')) {
             $imageName = time() . '.' . $request->image->extension();
-            $request->image->move(public_path('images/products'), $imageName);
+            $request->image->move(base_path('images/products'), $imageName);
             $imageUrl = '/images/products/' . $imageName;
         }
 
@@ -135,7 +135,7 @@ class AdminController extends Controller
         $imageUrl = $product->image_url;
         if ($request->hasFile('image')) {
             $imageName = time() . '.' . $request->image->extension();
-            $request->image->move(public_path('images/products'), $imageName);
+            $request->image->move(base_path('images/products'), $imageName);
             $imageUrl = '/images/products/' . $imageName;
         }
 

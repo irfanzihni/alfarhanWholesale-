@@ -68,7 +68,7 @@
                     <form action="{{ route('shop.index') }}" method="GET" class="hidden lg:block relative">
                         <input type="text" name="search" placeholder="Cari produk sunnah..." 
                                class="w-52 xl:w-60 pl-10 pr-4 py-2 border border-emerald-100 rounded-full bg-emerald-50/50 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:bg-white transition-all">
-                        <div class="absolute left-3 top-2.5 text-emerald-600">
+                        <div class="absolute left-3 top-1/2 -translate-y-1/2 flex items-center pointer-events-none text-emerald-600">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                         </div>
                     </form>
@@ -137,7 +137,7 @@
                 <form action="{{ route('shop.index') }}" method="GET" class="relative">
                     <input type="text" name="search" placeholder="Cari produk sunnah..." 
                            class="w-full pl-10 pr-4 py-3 border border-emerald-100 rounded-full bg-emerald-50/50 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:bg-white transition-all">
-                    <div class="absolute left-3 top-3.5 text-emerald-600">
+                    <div class="absolute left-3 top-1/2 -translate-y-1/2 flex items-center pointer-events-none text-emerald-600">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                     </div>
                 </form>
