@@ -17,7 +17,7 @@
             <!-- Search Widget (Mobile/Tablet visible) -->
             <div class="bg-white p-6 rounded-2xl border border-emerald-100 shadow-xs lg:hidden">
                 <h4 class="font-bold text-slate-800 text-sm mb-3">Search Products</h4>
-                <form action="{{ route('shop.index') }}" method="GET" class="relative">
+                <form action="{{ route('shop.index') }}" method="GET" class="site-search">
                     @if(request('category'))
                         <input type="hidden" name="category" value="{{ request('category') }}">
                     @endif
@@ -25,8 +25,8 @@
                         <input type="hidden" name="sort" value="{{ request('sort') }}">
                     @endif
                     <input type="text" name="search" value="{{ request('search') }}" placeholder="Search here..." 
-                           class="w-full pl-4 pr-10 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-transparent transition-all">
-                    <button type="submit" class="absolute right-3 top-1/2 -translate-y-1/2 flex items-center text-emerald-600">
+                           class="site-search-input py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-transparent transition-all">
+                    <button type="submit" class="site-search-button">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                     </button>
                 </form>
@@ -99,9 +99,9 @@
                     </a>
                 </div>
             @else
-                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-5 lg:gap-6">
                     @foreach($products as $product)
-                        <div class="bg-white border border-emerald-100 rounded-2xl shadow-xs overflow-hidden hover:shadow-lg transition-all flex flex-col group">
+                        <div class="bg-white border border-emerald-100 rounded-xl sm:rounded-2xl shadow-xs overflow-hidden hover:shadow-lg transition-all flex flex-col group min-w-0">
                             <div class="relative overflow-hidden bg-slate-100 aspect-square">
                                 <img src="{{ $product->image_url }}" alt="{{ $product->name }}" 
                                      class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
@@ -119,26 +119,26 @@
                                 @endif
                             </div>
                             
-                            <div class="p-6 flex-grow flex flex-col justify-between">
+                            <div class="p-3 sm:p-5 lg:p-6 flex-grow flex flex-col justify-between min-w-0">
                                 <div class="space-y-1.5">
-                                    <span class="text-xs font-bold text-emerald-700 uppercase tracking-wider">{{ ucfirst($product->category) }}</span>
-                                    <h3 class="font-bold text-slate-800 text-base line-clamp-1 group-hover:text-emerald-800 transition-colors">
+                                    <span class="text-[10px] sm:text-xs font-bold text-emerald-700 uppercase tracking-wider">{{ ucfirst($product->category) }}</span>
+                                    <h3 class="font-bold text-slate-800 text-sm sm:text-base line-clamp-2 group-hover:text-emerald-800 transition-colors">
                                         <a href="{{ route('shop.show', $product->id) }}">{{ $product->name }}</a>
                                     </h3>
-                                    <p class="text-slate-500 text-xs line-clamp-2 leading-relaxed">
+                                    <p class="text-slate-500 text-xs line-clamp-2 leading-relaxed hidden sm:block">
                                         {{ $product->description }}
                                     </p>
                                 </div>
 
-                                <div class="mt-6 flex items-center justify-between">
-                                    <div>
+                                <div class="mt-4 sm:mt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                                    <div class="min-w-0">
                                         @if($product->discount_price)
-                                            <div class="flex items-center gap-1.5">
-                                                <span class="text-emerald-800 font-extrabold text-lg">RM{{ number_format($product->discount_price, 2) }}</span>
+                                            <div class="flex flex-wrap items-center gap-1.5">
+                                                <span class="text-emerald-800 font-extrabold text-base sm:text-lg">RM{{ number_format($product->discount_price, 2) }}</span>
                                                 <span class="text-slate-400 line-through text-xs">RM{{ number_format($product->base_price, 2) }}</span>
                                             </div>
                                         @else
-                                            <span class="text-slate-800 font-extrabold text-lg">
+                                            <span class="text-slate-800 font-extrabold text-base sm:text-lg">
                                                 @if($product->variations->isNotEmpty())
                                                     From RM{{ number_format($product->variations->min('price'), 2) }}
                                                 @else
@@ -148,7 +148,7 @@
                                         @endif
                                     </div>
                                     <a href="{{ route('shop.show', $product->id) }}" 
-                                       class="bg-emerald-50 text-emerald-800 hover:bg-emerald-700 hover:text-white px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-xs">
+                                       class="bg-emerald-50 text-emerald-800 hover:bg-emerald-700 hover:text-white px-3 sm:px-4 py-2 rounded-lg sm:rounded-xl text-[11px] sm:text-xs font-bold transition-all shadow-xs text-center leading-tight">
                                         {{ $product->variations->isNotEmpty() ? 'Select Options' : 'View Details' }}
                                     </a>
                                 </div>

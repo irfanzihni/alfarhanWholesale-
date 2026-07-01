@@ -23,6 +23,29 @@
         /* Mobile menu */
         #mobile-menu { display: none; }
         #mobile-menu.open { display: block; }
+        .site-search {
+            position: relative;
+        }
+        .site-search-input {
+            width: 100%;
+            padding-left: 1rem;
+            padding-right: 2.75rem;
+        }
+        .site-search-icon,
+        .site-search-button {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #059669;
+            line-height: 1;
+        }
+        .site-search-icon {
+            pointer-events: none;
+        }
 
         /* Smooth transitions */
         * { -webkit-tap-highlight-color: transparent; }
@@ -30,25 +53,12 @@
         /* Better touch targets */
         @media (max-width: 768px) {
             nav a, header a { min-height: 44px; display: flex; align-items: center; }
-            .site-search {
-        position: relative;
-            }
-            .site-search-input {
-                width: 100%;
-                padding-left: 2.75rem;
-            }
+        }
 
-            .site-search-icon {
-                position: absolute;
-                left: 1rem;
-                top: 50%;
-                transform: translateY(-50%);
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                color: #059669;
-                pointer-events: none;
-                line-height: 1;
+        @media (min-width: 768px) {
+            #mobile-menu,
+            #mobile-menu.open {
+                display: none;
             }
         }
     </style>
@@ -88,7 +98,7 @@
                     <form action="{{ route('shop.index') }}" method="GET" class="hidden lg:block site-search w-52 xl:w-60">
                         <input type="text" name="search" placeholder="Cari produk sunnah..."
                             value="{{ request('search') }}"
-                            class="site-search-input pr-4 py-2 border border-emerald-100 rounded-full bg-emerald-50/50 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:bg-white transition-all">
+                            class="site-search-input py-2 border border-emerald-100 rounded-full bg-emerald-50/50 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:bg-white transition-all">
                         <div class="site-search-icon">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -159,7 +169,7 @@
             <form action="{{ route('shop.index') }}" method="GET" class="site-search">
                 <input type="text" name="search" placeholder="Cari produk sunnah..."
                         value="{{ request('search') }}"
-                        class="site-search-input pr-4 py-3 border border-emerald-100 rounded-full bg-emerald-50/50 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:bg-white transition-all">
+                        class="site-search-input py-3 border border-emerald-100 rounded-full bg-emerald-50/50 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:bg-white transition-all">
                 <div class="site-search-icon">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />

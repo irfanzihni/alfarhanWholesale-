@@ -123,9 +123,9 @@
     </div>
 
     <!-- Product Grid -->
-    <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8">
+    <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-8">
         @foreach($featuredProducts as $product)
-            <div class="bg-white border border-emerald-100 rounded-2xl shadow-xs overflow-hidden hover:shadow-lg transition-all flex flex-col group">
+            <div class="bg-white border border-emerald-100 rounded-xl sm:rounded-2xl shadow-xs overflow-hidden hover:shadow-lg transition-all flex flex-col group min-w-0">
                 <div class="relative overflow-hidden bg-slate-100 aspect-square">
                     <img src="{{ $product->image_url }}" alt="{{ $product->name }}" 
                          class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
@@ -137,10 +137,10 @@
                     @endif
                 </div>
                 
-                <div class="p-4 md:p-6 flex-grow flex flex-col justify-between">
+                <div class="p-3 sm:p-4 md:p-6 flex-grow flex flex-col justify-between min-w-0">
                     <div class="space-y-1.5">
-                        <span class="text-xs font-bold text-emerald-700 uppercase tracking-wider">{{ ucfirst($product->category) }}</span>
-                        <h3 class="font-bold text-slate-800 text-base line-clamp-1 group-hover:text-emerald-800 transition-colors">
+                        <span class="text-[10px] sm:text-xs font-bold text-emerald-700 uppercase tracking-wider">{{ ucfirst($product->category) }}</span>
+                        <h3 class="font-bold text-slate-800 text-sm sm:text-base line-clamp-2 group-hover:text-emerald-800 transition-colors">
                             <a href="{{ route('shop.show', $product->id) }}">{{ $product->name }}</a>
                         </h3>
                         <p class="text-slate-500 text-xs line-clamp-2 leading-relaxed">
@@ -148,19 +148,19 @@
                         </p>
                     </div>
 
-                    <div class="mt-6 flex items-center justify-between">
-                        <div>
+                    <div class="mt-4 sm:mt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                        <div class="min-w-0">
                             @if($product->discount_price)
-                                <div class="flex items-center gap-1.5">
-                                    <span class="text-emerald-800 font-extrabold text-lg">RM{{ number_format($product->discount_price, 2) }}</span>
+                                <div class="flex flex-wrap items-center gap-1.5">
+                                    <span class="text-emerald-800 font-extrabold text-base sm:text-lg">RM{{ number_format($product->discount_price, 2) }}</span>
                                     <span class="text-slate-400 line-through text-xs">RM{{ number_format($product->base_price, 2) }}</span>
                                 </div>
                             @else
-                                <span class="text-slate-800 font-extrabold text-lg">RM{{ number_format($product->base_price, 2) }}</span>
+                                <span class="text-slate-800 font-extrabold text-base sm:text-lg">RM{{ number_format($product->base_price, 2) }}</span>
                             @endif
                         </div>
                         <a href="{{ route('shop.show', $product->id) }}" 
-                           class="bg-emerald-50 text-emerald-800 hover:bg-emerald-700 hover:text-white px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-xs">
+                           class="bg-emerald-50 text-emerald-800 hover:bg-emerald-700 hover:text-white px-3 sm:px-4 py-2 rounded-lg sm:rounded-xl text-[11px] sm:text-xs font-bold transition-all shadow-xs text-center leading-tight">
                             Select Options
                         </a>
                     </div>
