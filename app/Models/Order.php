@@ -19,8 +19,15 @@ class Order extends Model
         'discount_amount',
         'final_amount',
         'coupon_code',
-        'status', // pending, processing, completed, cancelled
+        'status', // pending, paid, processing, completed, cancelled
+        'payment_bill_code',
+        'payment_ref',
+        'paid_at',
         'created_by', // sales agent user id
+    ];
+
+    protected $casts = [
+        'paid_at' => 'datetime',
     ];
 
     public function user(): BelongsTo

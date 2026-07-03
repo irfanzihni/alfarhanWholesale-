@@ -4,6 +4,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CheckoutController;
+use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProductController;
 use Illuminate\Support\Facades\Route;
 
@@ -30,6 +31,9 @@ Route::middleware('guest')->group(function () {
 
 Route::any('/logout', [AuthController::class, 'logout'])->name('logout');
 
+// Payment gateway webhook (must be outside auth — called by ToyyibPay/Billplz servers)
+Route::post('/webhook/payment', [PaymentController::class, 'webhook'])->name('webhook.payment');
+
 // Logged-in Customer Features (Cart, Coupons, Checkout, History)
 Route::middleware('auth')->group(function () {
     // Shopping Cart
@@ -47,6 +51,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
     Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
     Route::get('/checkout/success/{id}', [CheckoutController::class, 'success'])->name('checkout.success');
+
+    // Online Banking (FPX) & eWallet payment via local gateway
+    Route::get('/checkout/payment', [PaymentController::class, 'checkout'])->name('checkout.payment');
+    Route::get('/checkout/payment/status', [PaymentController::class, 'status'])->name('checkout.payment.status');
 
     // Customer Profile Orders
     Route::get('/orders', [CheckoutController::class, 'orders'])->name('customer.orders');
