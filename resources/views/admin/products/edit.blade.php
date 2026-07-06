@@ -81,7 +81,9 @@
             <!-- Image preview and upload -->
             <div class="flex flex-col sm:flex-row gap-6 items-start sm:items-center">
                 <div class="w-20 h-20 rounded-lg bg-slate-100 border border-slate-200 overflow-hidden shrink-0">
-                    <img src="{{ $product->image_url }}" alt="{{ $product->name }}" class="w-full h-full object-cover">
+                    <img src="{{ asset($product->image_url) }}" alt="{{ $product->name }}" class="w-full h-full object-cover"
+                         onerror="this.src='{{ asset('images/products/placeholder.jpg') }}'">
+
                 </div>
                 <div class="flex-grow">
                     <label for="image" class="block text-xs font-bold text-slate-600 mb-1.5 uppercase">Update Thumbnail Image</label>

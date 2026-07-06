@@ -36,7 +36,9 @@
                                 <!-- Product details -->
                                 <td class="p-4 pl-6 flex items-center gap-3">
                                     <div class="w-10 h-10 rounded bg-slate-50 border overflow-hidden shrink-0">
-                                        <img src="{{ $product->image_url }}" alt="{{ $product->name }}" class="w-full h-full object-cover">
+                                        <img src="{{ asset($product->image_url) }}" alt="{{ $product->name }}" class="w-full h-full object-cover"
+                                             onerror="this.src='{{ asset('images/products/placeholder.jpg') }}'">
+
                                     </div>
                                     <div>
                                         <span class="font-bold text-slate-900 text-sm">{{ $product->name }}</span>
@@ -89,7 +91,9 @@
                             <!-- Product details -->
                             <td class="p-4 pl-6 flex items-center gap-3">
                                 <div class="w-10 h-10 rounded bg-slate-50 border overflow-hidden shrink-0">
-                                    <img src="{{ $product->image_url }}" alt="{{ $product->name }}" class="w-full h-full object-cover">
+                                    <img src="{{ asset($product->image_url) }}" alt="{{ $product->name }}" class="w-full h-full object-cover"
+                                         onerror="this.src='{{ asset('images/products/placeholder.jpg') }}'">
+
                                 </div>
                                 <div>
                                     <span class="font-bold text-slate-900 text-sm">{{ $product->name }}</span>

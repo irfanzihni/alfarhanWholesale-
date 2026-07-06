@@ -37,7 +37,9 @@
                         <!-- Name & Image -->
                         <td class="p-4 pl-6 flex items-center gap-3">
                             <div class="w-12 h-12 rounded-lg bg-slate-100 border border-slate-200 overflow-hidden shrink-0">
-                                <img src="{{ $product->image_url }}" alt="{{ $product->name }}" class="w-full h-full object-cover">
+                                <img src="{{ asset($product->image_url) }}" alt="{{ $product->name }}" class="w-full h-full object-cover"
+                                     onerror="this.src='{{ asset('images/products/placeholder.jpg') }}'">
+
                             </div>
                             <div>
                                 <span class="font-bold text-slate-900 block">{{ $product->name }}</span>

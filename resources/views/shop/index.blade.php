@@ -103,8 +103,10 @@
                     @foreach($products as $product)
                         <div class="bg-white border border-emerald-100 rounded-xl sm:rounded-2xl shadow-xs overflow-hidden hover:shadow-lg transition-all flex flex-col group min-w-0">
                             <div class="relative overflow-hidden bg-slate-100 aspect-square">
-                                <img src="{{ $product->image_url }}" alt="{{ $product->name }}" 
-                                     class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                                <img src="{{ asset($product->image_url) }}" 
+                                     alt="{{ $product->name }}" 
+                                     class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                     onerror="this.src='{{ asset('images/products/placeholder.jpg') }}'">
                                 
                                 @if($product->discount_price)
                                     <span class="absolute top-4 left-4 bg-red-600 text-white text-[10px] font-extrabold px-2.5 py-1 rounded-full uppercase tracking-wider">

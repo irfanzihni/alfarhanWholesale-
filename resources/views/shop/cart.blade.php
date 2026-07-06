@@ -34,7 +34,9 @@
                                 <tr>
                                     <td class="p-5 pl-6 flex items-center gap-4">
                                         <div class="w-16 h-16 rounded-lg bg-slate-50 border border-slate-100 overflow-hidden shrink-0">
-                                            <img src="{{ $item->product->image_url }}" alt="{{ $item->product->name }}" class="w-full h-full object-cover">
+                                            <img src="{{ asset($item->product->image_url) }}" alt="{{ $item->product->name }}" class="w-full h-full object-cover"
+                                                 onerror="this.src='{{ asset('images/products/placeholder.jpg') }}'">
+
                                         </div>
                                         <div>
                                             <h4 class="font-bold text-slate-800 text-sm hover:text-emerald-700">
@@ -79,7 +81,9 @@
                         @foreach($cartItems as $item)
                             <div class="p-4 flex gap-4 items-start">
                                 <div class="w-20 h-20 rounded-xl bg-slate-50 border border-slate-100 overflow-hidden shrink-0">
-                                    <img src="{{ $item->product->image_url }}" alt="{{ $item->product->name }}" class="w-full h-full object-cover">
+                                    <img src="{{ asset($item->product->image_url) }}" alt="{{ $item->product->name }}" class="w-full h-full object-cover"
+                                         onerror="this.src='{{ asset('images/products/placeholder.jpg') }}'">
+
                                 </div>
                                 <div class="flex-grow space-y-2">
                                     <div class="flex justify-between items-start">

@@ -18,7 +18,10 @@
             <!-- Left: Product Image -->
             <div class="space-y-4">
                 <div class="bg-slate-50 border border-emerald-50 rounded-2xl overflow-hidden aspect-square flex items-center justify-center">
-                    <img id="main-product-image" src="{{ $product->image_url }}" alt="{{ $product->name }}" class="w-full h-full object-cover">
+                    <img id="main-product-image" src="{{ asset($product->image_url) }}" alt="{{ $product->name }}" 
+                         class="w-full h-full object-cover"
+                         onerror="this.src='{{ asset('images/products/placeholder.jpg') }}'">
+
                 </div>
             </div>
 
@@ -118,8 +121,10 @@
                 @foreach($relatedProducts as $related)
                     <div class="bg-white border border-emerald-100 rounded-2xl shadow-xs overflow-hidden hover:shadow-md transition-all flex flex-col group">
                         <div class="relative overflow-hidden bg-slate-100 aspect-square">
-                            <img src="{{ $related->image_url }}" alt="{{ $related->name }}" 
-                                 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                            <img src="{{ asset($related->image_url) }}" alt="{{ $related->name }}" 
+                                 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                 onerror="this.src='{{ asset('images/products/placeholder.jpg') }}'">
+
                         </div>
                         <div class="p-6">
                             <span class="text-xs font-bold text-emerald-700 uppercase tracking-wider">{{ ucfirst($related->category) }}</span>

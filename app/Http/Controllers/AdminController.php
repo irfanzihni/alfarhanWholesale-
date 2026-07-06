@@ -9,6 +9,8 @@ use App\Models\OrderItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
+use Intervention\Image\Laravel\Facades\Image;
 
 class AdminController extends Controller
 {
@@ -87,14 +89,12 @@ class AdminController extends Controller
             'base_price' => 'required|numeric|min:0',
             'discount_price' => 'nullable|numeric|min:0|lt:base_price',
             'stock' => 'required|integer|min:0',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:4096',
         ]);
 
-        $imageUrl = '/images/products/placeholder.jpg';
+        $imagePath = 'images/products/placeholder.jpg';
         if ($request->hasFile('image')) {
-            $imageName = time() . '.' . $request->image->extension();
-            $request->image->move(base_path('images/products'), $imageName);
-            $imageUrl = '/images/products/' . $imageName;
+            $imagePath = $this->uploadProductImage($request->file('image'));
         }
 
         Product::create([
@@ -104,7 +104,7 @@ class AdminController extends Controller
             'base_price' => $request->base_price,
             'discount_price' => $request->discount_price,
             'stock' => $request->stock,
-            'image_url' => $imageUrl,
+            'image_url' => $imagePath,
         ]);
 
         return redirect()->route('admin.products')->with('success', 'Product created successfully.');
@@ -129,14 +129,19 @@ class AdminController extends Controller
             'base_price' => 'required|numeric|min:0',
             'discount_price' => 'nullable|numeric|min:0|lt:base_price',
             'stock' => 'required|integer|min:0',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:4096',
         ]);
 
-        $imageUrl = $product->image_url;
+        $imagePath = $product->image_url;
         if ($request->hasFile('image')) {
-            $imageName = time() . '.' . $request->image->extension();
-            $request->image->move(base_path('images/products'), $imageName);
-            $imageUrl = '/images/products/' . $imageName;
+            // Padam gambar lama (kalau bukan placeholder)
+            if ($imagePath !== 'images/products/placeholder.jpg') {
+                $oldFile = public_path($imagePath);
+                if (File::exists($oldFile)) {
+                    File::delete($oldFile);
+                }
+            }
+            $imagePath = $this->uploadProductImage($request->file('image'));
         }
 
         $product->update([
@@ -146,10 +151,33 @@ class AdminController extends Controller
             'base_price' => $request->base_price,
             'discount_price' => $request->discount_price,
             'stock' => $request->stock,
-            'image_url' => $imageUrl,
+            'image_url' => $imagePath,
         ]);
 
         return redirect()->route('admin.products')->with('success', 'Product updated successfully.');
+    }
+
+    /**
+     * Convert mana-mana format gambar (png, webp, gif, dll) kepada .jpg
+     * dan simpan ke public/images/products/.
+     * Return: path relatif dari public (contoh: "images/products/1720000000.jpg")
+     */
+    private function uploadProductImage($file): string
+    {
+        $destDir = public_path('images/products');
+        if (! File::exists($destDir)) {
+            File::makeDirectory($destDir, 0755, true);
+        }
+
+        $fileName = time() . '_' . uniqid() . '.jpg';
+        $destPath = $destDir . DIRECTORY_SEPARATOR . $fileName;
+
+        // Baca gambar → encode ke JPEG kualiti 85 → simpan
+        Image::read($file->getRealPath())
+            ->toJpeg(85)
+            ->save($destPath);
+
+        return 'images/products/' . $fileName;
     }
 
     public function productDestroy($id)
