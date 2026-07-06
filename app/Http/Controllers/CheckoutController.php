@@ -64,10 +64,10 @@ class CheckoutController extends Controller
         }
 
         $request->validate([
-            'customer_name' => 'required|string|max:255',
-            'customer_phone' => 'required|string|max:20',
+            'customer_name'    => 'required|string|max:255',
+            'customer_phone'   => 'required|string|max:20',
             'delivery_address' => 'required|string',
-            'payment_method' => 'required|in:cod,card',
+            'payment_method'   => 'required|in:cod,online',
         ]);
 
         $cartItems = CartItem::with(['product', 'variation'])
@@ -167,7 +167,18 @@ class CheckoutController extends Controller
 
             DB::commit();
 
-            return redirect()->route('checkout.success', $order->id)->with('success', 'Thank you! Your order has been placed.');
+            // ─── Routing berdasarkan kaedah bayaran ─────────────────────────
+            if ($request->payment_method === 'online') {
+                // Redirect ke ToyyibPay sandbox payment page
+                return redirect()
+                    ->route('checkout.payment', ['order_id' => $order->id])
+                    ->with('info', 'Sila lengkapkan pembayaran anda.');
+            }
+
+            // COD — terus ke halaman success
+            return redirect()
+                ->route('checkout.success', $order->id)
+                ->with('success', 'Terima kasih! Pesanan anda telah diterima.');
 
         } catch (\Exception $e) {
             DB::rollBack();

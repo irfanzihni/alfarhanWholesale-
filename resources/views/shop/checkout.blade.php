@@ -40,19 +40,24 @@
                 <h3 class="text-lg font-bold text-emerald-950 border-b border-emerald-50 pb-2">Payment Method</h3>
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <label class="border border-emerald-200 bg-emerald-50/10 rounded-xl p-4 flex items-center gap-3 cursor-pointer hover:bg-emerald-50/20 transition-all">
-                        <input type="radio" name="payment_method" value="cod" checked class="h-4 w-4 text-emerald-600 focus:ring-emerald-500">
+                    <!-- COD -->
+                    <label id="label-cod" class="border-2 border-emerald-200 bg-emerald-50/10 rounded-xl p-4 flex items-center gap-3 cursor-pointer hover:bg-emerald-50/30 transition-all has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-50">
+                        <input type="radio" name="payment_method" value="cod" checked 
+                               class="h-4 w-4 text-emerald-600 focus:ring-emerald-500">
                         <div>
                             <span class="block font-bold text-sm text-slate-800">Cash on Delivery (COD)</span>
-                            <span class="block text-xs text-slate-500">Pay cash upon package arrival</span>
+                            <span class="block text-xs text-slate-500 mt-0.5">Bayar tunai semasa terima barang</span>
                         </div>
                     </label>
 
-                    <label class="border border-slate-200 rounded-xl p-4 flex items-center gap-3 cursor-pointer hover:bg-slate-50 transition-all">
-                        <input type="radio" name="payment_method" value="card" class="h-4 w-4 text-emerald-600 focus:ring-emerald-500">
+                    <!-- Online Banking / eWallet via ToyyibPay -->
+                    <label id="label-online" class="border-2 border-slate-200 rounded-xl p-4 flex items-center gap-3 cursor-pointer hover:bg-slate-50 transition-all has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-50">
+                        <input type="radio" name="payment_method" value="online"
+                               class="h-4 w-4 text-emerald-600 focus:ring-emerald-500">
                         <div>
-                            <span class="block font-bold text-sm text-slate-800">Credit / Debit Card (Mock)</span>
-                            <span class="block text-xs text-slate-500">Fast, secure online payment simulation</span>
+                            <span class="block font-bold text-sm text-slate-800">Online Banking / eWallet</span>
+                            <span class="block text-xs text-slate-500 mt-0.5">FPX, MAE, TNG, Boost &amp; kad kredit/debit</span>
+                            <span class="inline-block mt-1.5 bg-blue-100 text-blue-700 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide">Dikuasakan ToyyibPay</span>
                         </div>
                     </label>
                 </div>
@@ -107,7 +112,7 @@
                 <div class="pt-4">
                     <button type="submit" 
                             class="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-3.5 px-6 rounded-lg shadow-md hover:shadow-lg transition-all text-center">
-                        Place Order (RM{{ number_format($total, 2) }})
+                        Teruskan Pembayaran (RM{{ number_format($total, 2) }})
                     </button>
                 </div>
             </div>
