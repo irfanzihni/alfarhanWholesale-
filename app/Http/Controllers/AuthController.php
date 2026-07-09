@@ -8,6 +8,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Str;
 
 class AuthController extends Controller
 {
@@ -115,5 +117,64 @@ class AuthController extends Controller
         $request->session()->regenerateToken();
 
         return redirect()->route('shop.home')->with('success', 'Logged out successfully.');
+    }
+
+    // Google Sign-In with Firebase ID Token
+    public function loginWithGoogle(Request $request)
+    {
+        $request->validate([
+            'id_token' => 'required|string',
+        ]);
+
+        $idToken = $request->id_token;
+        $apiKey = 'AIzaSyA-EDxariyRsE0ErsdVWlv3N2RJ5G28l00';
+
+        // Verify token with Firebase REST API
+        $response = Http::post("https://identitytoolkit.googleapis.com/v1/accounts:lookup?key={$apiKey}", [
+            'idToken' => $idToken,
+        ]);
+
+        if ($response->failed()) {
+            return redirect()->route('login')->with('error', 'Authentication failed. Invalid token.');
+        }
+
+        $data = $response->json();
+
+        if (empty($data['users'][0])) {
+            return redirect()->route('login')->with('error', 'Authentication failed. User not found in token.');
+        }
+
+        $firebaseUser = $data['users'][0];
+        $email = $firebaseUser['email'] ?? null;
+        $name = $firebaseUser['displayName'] ?? 'Google User';
+
+        if (!$email) {
+            return redirect()->route('login')->with('error', 'Authentication failed. Email not provided by Google.');
+        }
+
+        // Find or create user
+        $user = User::where('email', $email)->first();
+
+        if (!$user) {
+            // Create user
+            $user = new User([
+                'name' => $name,
+                'email' => $email,
+                'password' => Hash::make(Str::random(24)),
+            ]);
+            $user->role = 'customer';
+            $user->save();
+        }
+
+        // Log the user in
+        Auth::login($user, true);
+
+        $request->session()->regenerate();
+
+        if ($user->role === 'customer') {
+            return redirect()->intended(route('shop.home'))->with('success', 'Logged in successfully via Google.');
+        } else {
+            return redirect()->route('admin.dashboard')->with('success', 'Staff logged in successfully via Google.');
+        }
     }
 }

@@ -48,6 +48,31 @@
             </button>
         </form>
 
+        <div class="relative my-6">
+            <div class="absolute inset-0 flex items-center" aria-hidden="true">
+                <div class="w-full border-t border-slate-200"></div>
+            </div>
+            <div class="relative flex justify-center text-xs uppercase font-medium">
+                <span class="bg-white px-3 text-slate-500">Or continue with</span>
+            </div>
+        </div>
+
+        <button type="button" id="google-signin-btn"
+                class="w-full flex items-center justify-center gap-2 border border-slate-200 text-slate-700 font-bold py-3 px-4 rounded-lg hover:bg-slate-50 transition-all shadow-xs hover:shadow-md">
+            <svg class="w-5 h-5" viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M21.35,11.1H12v2.7h5.38c-0.24,1.28 -0.96,2.37 -2.04,3.1v2.57h3.3c1.93,-1.78 3.04,-4.4 3.04,-7.4C21.68,11.77 21.56,11.41 21.35,11.1z" fill="#4285F4" />
+                <path d="M12,20.6c2.59,0 4.77,-0.86 6.36,-2.33l-3.3,-2.57c-0.91,0.61 -2.08,0.97 -3.06,0.97 -2.35,0 -4.35,-1.59 -5.06,-3.72H3.5v2.66c1.57,3.12 4.8,5.04 8.5,5.04z" fill="#34A853" />
+                <path d="M6.94,12.96c-0.18,-0.54 -0.28,-1.12 -0.28,-1.71s0.1,-1.17 0.28,-1.71V6.88H3.5C2.89,8.1 2.54,9.47 2.54,10.92s0.35,2.82 0.96,4.04l2.94,-2.48 -0.5,-0.52z" fill="#FBBC05" />
+                <path d="M12,5.28c1.41,0 2.68,0.48 3.68,1.44l2.76,-2.76C16.77,2.44 14.59,1.56 12,1.56c-3.7,0 -6.93,1.92 -8.5,5.04l2.94,2.48c0.71,-2.13 2.71,-3.72 5.06,-3.72z" fill="#EA4335" />
+            </svg>
+            Google Account
+        </button>
+
+        <form id="google-login-form" action="{{ route('login.google') }}" method="POST" style="display: none;">
+            @csrf
+            <input type="hidden" name="id_token" id="google-id-token">
+        </form>
+
         <div class="mt-8 pt-6 border-t border-slate-100 text-center">
             <p class="text-xs text-slate-500">
                 Don't have an account? 
@@ -57,3 +82,26 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+    document.getElementById('google-signin-btn')?.addEventListener('click', function() {
+        if (!window.firebaseAuth || !window.googleAuthProvider || !window.firebaseSignInWithPopup) {
+            alert('Firebase is still loading. Please try again in a moment.');
+            return;
+        }
+        window.firebaseSignInWithPopup(window.firebaseAuth, window.googleAuthProvider)
+            .then((result) => {
+                return result.user.getIdToken();
+            })
+            .then((idToken) => {
+                document.getElementById('google-id-token').value = idToken;
+                document.getElementById('google-login-form').submit();
+            })
+            .catch((error) => {
+                console.error("Google Sign-In Error:", error);
+                alert("Sign-In failed: " + error.message);
+            });
+    });
+</script>
+@endpush

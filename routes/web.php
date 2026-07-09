@@ -23,6 +23,7 @@ Route::middleware('guest')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
     Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
     Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/login/google', [AuthController::class, 'loginWithGoogle'])->name('login.google');
 
     // Admin Auth Login
     Route::get('/admin/login', [AuthController::class, 'showAdminLoginForm'])->name('admin.login');

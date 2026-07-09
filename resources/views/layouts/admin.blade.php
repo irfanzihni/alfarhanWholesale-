@@ -164,5 +164,34 @@
         </main>
     </div>
 
+    <!-- Firebase App and Auth SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-analytics.js";
+        import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyA-EDxariyRsE0ErsdVWlv3N2RJ5G28l00",
+            authDomain: "alfarhanwholesale-31ed4.firebaseapp.com",
+            projectId: "alfarhanwholesale-31ed4",
+            storageBucket: "alfarhanwholesale-31ed4.firebasestorage.app",
+            messagingSenderId: "550883612445",
+            appId: "1:550883612445:web:07fe27e7bf53365361f3f4",
+            measurementId: "G-XG3HPDKS79"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+        const auth = getAuth(app);
+        const provider = new GoogleAuthProvider();
+
+        // Expose to window for easy access in templates
+        window.firebaseAuth = auth;
+        window.googleAuthProvider = provider;
+        window.firebaseSignInWithPopup = signInWithPopup;
+    </script>
+
+    @stack('scripts')
+
 </body>
 </html>
