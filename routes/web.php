@@ -25,6 +25,12 @@ Route::middleware('guest')->group(function () {
     Route::post('/login', [AuthController::class, 'login']);
     Route::post('/login/google', [AuthController::class, 'loginWithGoogle'])->name('login.google');
 
+    // Forgot Password
+    Route::get('/forgot-password', [AuthController::class, 'showForgotPasswordForm'])->name('password.request');
+    Route::post('/forgot-password', [AuthController::class, 'sendResetLinkEmail'])->name('password.email');
+    Route::get('/reset-password/{token}', [AuthController::class, 'showResetPasswordForm'])->name('password.reset');
+    Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('password.update');
+
     // Admin Auth Login
     Route::get('/admin/login', [AuthController::class, 'showAdminLoginForm'])->name('admin.login');
     Route::post('/admin/login', [AuthController::class, 'adminLogin']);
@@ -37,60 +43,68 @@ Route::post('/webhook/payment', [PaymentController::class, 'webhook'])->name('we
 
 // Logged-in Customer Features (Cart, Coupons, Checkout, History)
 Route::middleware('auth')->group(function () {
-    // Shopping Cart
-    Route::get('/cart', [CartController::class, 'index'])->name('shop.cart');
-    Route::post('/cart/add', [CartController::class, 'add'])->name('cart.add');
-    Route::post('/cart/update/{id}', [CartController::class, 'update'])->name('cart.update');
-    Route::post('/cart/remove/{id}', [CartController::class, 'remove'])->name('cart.remove');
+    // Email Verification Notice & Verification Actions
+    Route::get('/email/verify', [AuthController::class, 'showVerificationNotice'])->name('verification.notice');
+    Route::get('/email/verify/{id}/{hash}', [AuthController::class, 'verifyEmail'])->middleware('signed')->name('verification.verify');
+    Route::post('/email/verification-notification', [AuthController::class, 'resendVerificationEmail'])->middleware('throttle:6,1')->name('verification.send');
 
-    // Coupon Actions
-    Route::post('/coupon/claim', [CartController::class, 'claimCoupon'])->name('coupon.claim');
-    Route::post('/coupon/apply', [CartController::class, 'applyCoupon'])->name('coupon.apply');
-    Route::post('/coupon/remove', [CartController::class, 'removeCoupon'])->name('coupon.remove');
+    // Verified Customer & Administrative Features
+    Route::middleware('verified')->group(function () {
+        // Shopping Cart
+        Route::get('/cart', [CartController::class, 'index'])->name('shop.cart');
+        Route::post('/cart/add', [CartController::class, 'add'])->name('cart.add');
+        Route::post('/cart/update/{id}', [CartController::class, 'update'])->name('cart.update');
+        Route::post('/cart/remove/{id}', [CartController::class, 'remove'])->name('cart.remove');
 
-    // Checkout
-    Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
-    Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
-    Route::get('/checkout/success/{id}', [CheckoutController::class, 'success'])->name('checkout.success');
+        // Coupon Actions
+        Route::post('/coupon/claim', [CartController::class, 'claimCoupon'])->name('coupon.claim');
+        Route::post('/coupon/apply', [CartController::class, 'applyCoupon'])->name('coupon.apply');
+        Route::post('/coupon/remove', [CartController::class, 'removeCoupon'])->name('coupon.remove');
 
-    // Online Banking (FPX) & eWallet payment via local gateway
-    Route::get('/checkout/payment', [PaymentController::class, 'checkout'])->name('checkout.payment');
-    Route::get('/checkout/payment/status', [PaymentController::class, 'status'])->name('checkout.payment.status');
+        // Checkout
+        Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
+        Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
+        Route::get('/checkout/success/{id}', [CheckoutController::class, 'success'])->name('checkout.success');
 
-    // Customer Profile Orders
-    Route::get('/orders', [CheckoutController::class, 'orders'])->name('customer.orders');
+        // Online Banking (FPX) & eWallet payment via local gateway
+        Route::get('/checkout/payment', [PaymentController::class, 'checkout'])->name('checkout.payment');
+        Route::get('/checkout/payment/status', [PaymentController::class, 'status'])->name('checkout.payment.status');
 
-    // ----------------------------------------------------
-    // ADMINISTRATIVE PORTAL (Restricted to Staff Roles)
-    // ----------------------------------------------------
-    Route::prefix('admin')->group(function () {
-        // Dashboard Home page
-        Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
+        // Customer Profile Orders
+        Route::get('/orders', [CheckoutController::class, 'orders'])->name('customer.orders');
 
-        // Admin Role: Product & Variations CRUD
-        Route::get('/products', [AdminController::class, 'productList'])->name('admin.products');
-        Route::get('/products/create', [AdminController::class, 'productCreate'])->name('admin.products.create');
-        Route::post('/products', [AdminController::class, 'productStore'])->name('admin.products.store');
-        Route::get('/products/edit/{id}', [AdminController::class, 'productEdit'])->name('admin.products.edit');
-        Route::post('/products/update/{id}', [AdminController::class, 'productUpdate'])->name('admin.products.update');
-        Route::post('/products/delete/{id}', [AdminController::class, 'productDestroy'])->name('admin.products.delete');
-        
-        // Variations CRUD
-        Route::post('/products/{productId}/variations', [AdminController::class, 'variationStore'])->name('admin.variations.store');
-        Route::post('/variations/delete/{id}', [AdminController::class, 'variationDestroy'])->name('admin.variations.delete');
+        // ----------------------------------------------------
+        // ADMINISTRATIVE PORTAL (Restricted to Staff Roles)
+        // ----------------------------------------------------
+        Route::prefix('admin')->group(function () {
+            // Dashboard Home page
+            Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
 
-        // Outdoor Sales Agent: Log Sales
-        Route::post('/sales/outdoor', [AdminController::class, 'logOutdoorSale'])->name('admin.sales.outdoor');
+            // Admin Role: Product & Variations CRUD
+            Route::get('/products', [AdminController::class, 'productList'])->name('admin.products');
+            Route::get('/products/create', [AdminController::class, 'productCreate'])->name('admin.products.create');
+            Route::post('/products', [AdminController::class, 'productStore'])->name('admin.products.store');
+            Route::get('/products/edit/{id}', [AdminController::class, 'productEdit'])->name('admin.products.edit');
+            Route::post('/products/update/{id}', [AdminController::class, 'productUpdate'])->name('admin.products.update');
+            Route::post('/products/delete/{id}', [AdminController::class, 'productDestroy'])->name('admin.products.delete');
+            
+            // Variations CRUD
+            Route::post('/products/{productId}/variations', [AdminController::class, 'variationStore'])->name('admin.variations.store');
+            Route::post('/variations/delete/{id}', [AdminController::class, 'variationDestroy'])->name('admin.variations.delete');
 
-        // Purchaser Role: Inventory & Restocking
-        Route::get('/inventory', [AdminController::class, 'inventoryList'])->name('admin.inventory');
-        Route::post('/inventory/restock', [AdminController::class, 'restock'])->name('admin.inventory.restock');
+            // Outdoor Sales Agent: Log Sales
+            Route::post('/sales/outdoor', [AdminController::class, 'logOutdoorSale'])->name('admin.sales.outdoor');
 
-        // Storekeeper Role: Order Fulfillment
-        Route::get('/orders', [AdminController::class, 'orderList'])->name('admin.orders');
-        Route::post('/orders/{id}/status', [AdminController::class, 'updateOrderStatus'])->name('admin.orders.status');
+            // Purchaser Role: Inventory & Restocking
+            Route::get('/inventory', [AdminController::class, 'inventoryList'])->name('admin.inventory');
+            Route::post('/inventory/restock', [AdminController::class, 'restock'])->name('admin.inventory.restock');
 
-        // Reports View
-        Route::get('/reports', [AdminController::class, 'reports'])->name('admin.reports');
+            // Storekeeper Role: Order Fulfillment
+            Route::get('/orders', [AdminController::class, 'orderList'])->name('admin.orders');
+            Route::post('/orders/{id}/status', [AdminController::class, 'updateOrderStatus'])->name('admin.orders.status');
+
+            // Reports View
+            Route::get('/reports', [AdminController::class, 'reports'])->name('admin.reports');
+        });
     });
 });

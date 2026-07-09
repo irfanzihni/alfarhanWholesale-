@@ -10,6 +10,9 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Password;
+use Illuminate\Auth\Events\PasswordReset;
+use Illuminate\Foundation\Auth\EmailVerificationRequest;
 
 class AuthController extends Controller
 {
@@ -32,16 +35,19 @@ class AuthController extends Controller
             return back()->withErrors($validator)->withInput();
         }
 
-        $user = User::create([
+        $user = new User([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'role' => 'customer',
         ]);
+        $user->role = 'customer';
+        $user->save();
+
+        event(new \Illuminate\Auth\Events\Registered($user));
 
         Auth::login($user);
 
-        return redirect()->route('shop.home')->with('success', 'Registration successful! Welcome to our store.');
+        return redirect()->route('verification.notice')->with('success', 'Registration successful! Please verify your email.');
     }
 
     // Customer Login View
@@ -176,5 +182,82 @@ class AuthController extends Controller
         } else {
             return redirect()->route('admin.dashboard')->with('success', 'Staff logged in successfully via Google.');
         }
+    }
+
+    // Forgot Password - Show Form
+    public function showForgotPasswordForm()
+    {
+        return view('auth.forgot-password');
+    }
+
+    // Forgot Password - Send Link Email
+    public function sendResetLinkEmail(Request $request)
+    {
+        $request->validate(['email' => 'required|email']);
+
+        $status = Password::sendResetLink(
+            $request->only('email')
+        );
+
+        return $status === Password::RESET_LINK_SENT
+                    ? back()->with('status', __($status))
+                    : back()->withErrors(['email' => __($status)]);
+    }
+
+    // Reset Password - Show Form
+    public function showResetPasswordForm(Request $request, $token)
+    {
+        return view('auth.reset-password', ['token' => $token, 'request' => $request]);
+    }
+
+    // Reset Password - Handle Update
+    public function resetPassword(Request $request)
+    {
+        $request->validate([
+            'token' => 'required',
+            'email' => 'required|email',
+            'password' => 'required|min:6|confirmed',
+        ]);
+
+        $status = Password::reset(
+            $request->only('email', 'password', 'password_confirmation', 'token'),
+            function ($user, $password) {
+                $user->forceFill([
+                    'password' => Hash::make($password)
+                ])->setRememberToken(Str::random(60));
+
+                $user->save();
+
+                event(new PasswordReset($user));
+            }
+        );
+
+        return $status === Password::PASSWORD_RESET
+                    ? redirect()->route('login')->with('success', __($status))
+                    : back()->withErrors(['email' => __($status)]);
+    }
+
+    // Email Verification - Show Notice Page
+    public function showVerificationNotice(Request $request)
+    {
+        return $request->user()->hasVerifiedEmail()
+                    ? redirect()->intended(route('shop.home'))
+                    : view('auth.verify-email');
+    }
+
+    // Email Verification - Verify Signature
+    public function verifyEmail(EmailVerificationRequest $request)
+    {
+        $request->fulfill();
+
+        return redirect()->route('shop.home')->with('success', 'Email verified successfully! You can now shop.');
+    }
+
+    // Email Verification - Resend link
+    public function resendVerificationEmail(Request $request)
+    {
+        $request->user()->sendEmailVerificationNotification();
+
+        return back()->with('status', 'verification-link-sent');
     }
 }

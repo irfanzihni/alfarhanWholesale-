@@ -30,6 +30,7 @@
             <div>
                 <div class="flex justify-between items-center">
                     <label for="password" class="block text-sm font-semibold text-slate-700">Password</label>
+                    <a href="{{ route('password.request') }}" class="text-xs font-semibold text-emerald-700 hover:text-emerald-900 transition-colors">Forgot password?</a>
                 </div>
                 <input type="password" name="password" id="password" required
                        class="w-full mt-1.5 px-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-transparent transition-all">
