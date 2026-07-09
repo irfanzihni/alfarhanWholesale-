@@ -1,7 +1,8 @@
-@extends('layouts.app')
+@extends('layouts.guest')
+
+@section('title', 'Sign In - ' . config('app.name', 'AlfarhanWholesale'))
 
 @section('content')
-<div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 via-white to-teal-50 py-12 px-4 sm:px-6 lg:px-8">
     <div class="max-w-md w-full">
         <div class="bg-white rounded-3xl shadow-2xl overflow-hidden border border-emerald-100">
             <div class="bg-gradient-to-r from-emerald-600 to-teal-600 px-8 py-6">
@@ -113,7 +114,6 @@
             </div>
         </div>
     </div>
-</div>
 @endsection
 
 @push('scripts')
