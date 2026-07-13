@@ -330,6 +330,8 @@
             color: #94a3b8;
         }
     </style>
+
+    @stack('styles')
 </head>
 <body class="auth-page">
 
@@ -352,9 +354,9 @@
     </footer>
 
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
-        import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-analytics.js";
-        import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics.js";
+        import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyA-EDxariyRsE0ErsdVWlv3N2RJ5G28l00",
@@ -367,9 +369,10 @@
         };
 
         const app = initializeApp(firebaseConfig);
-        getAnalytics(app);
+        try { getAnalytics(app); } catch(e) {}
         const auth = getAuth(app);
         const provider = new GoogleAuthProvider();
+        provider.setCustomParameters({ prompt: 'select_account' });
 
         window.firebaseAuth = auth;
         window.googleAuthProvider = provider;
