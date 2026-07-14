@@ -63,16 +63,12 @@ class CheckoutController extends Controller
             return redirect()->route('login')->with('error', 'Please login to place an order.');
         }
 
-        $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
+        $request->validate([
             'customer_name'    => 'required|string|max:255',
             'customer_phone'   => 'required|string|max:20',
             'delivery_address' => 'required|string',
             'payment_method'   => 'required|in:cod,online',
         ]);
-
-        if ($validator->fails()) {
-            return redirect()->back()->withErrors($validator)->withInput();
-        }
 
         $cartItems = CartItem::with(['product', 'variation'])
             ->where('user_id', $user->id)
