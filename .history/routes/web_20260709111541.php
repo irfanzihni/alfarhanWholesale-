@@ -67,7 +67,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/checkout/success/{id}', [CheckoutController::class, 'success'])->name('checkout.success');
 
         // Online Banking (FPX) & eWallet payment via local gateway
-        Route::get('/checkout/payment/{order_id}', [PaymentController::class, 'checkout'])->name('checkout.payment');
+        Route::get('/checkout/payment', [PaymentController::class, 'checkout'])->name('checkout.payment');
         Route::get('/checkout/payment/status', [PaymentController::class, 'status'])->name('checkout.payment.status');
 
         // Customer Profile Orders
