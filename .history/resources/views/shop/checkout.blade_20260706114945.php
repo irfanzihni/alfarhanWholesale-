@@ -23,7 +23,7 @@
                         <label for="customer_phone" class="block text-sm font-semibold text-slate-700">Phone Number</label>
                         <input type="text" name="customer_phone" id="customer_phone" value="{{ old('customer_phone') }}" required
                                class="w-full mt-1.5 px-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-transparent transition-all"
-                               placeholder="e.g. 01x xxxxxxxx">
+                               placeholder="e.g. +1 234 567 890">
                     </div>
                 </div>
 
@@ -56,7 +56,7 @@
                                class="h-4 w-4 text-emerald-600 focus:ring-emerald-500">
                         <div>
                             <span class="block font-bold text-sm text-slate-800">Online Banking / eWallet</span>
-
+                            <span class="block text-xs text-slate-500 mt-0.5">FPX, MAE, TNG, Boost &amp; kad kredit/debit</span>
                             <span class="inline-block mt-1.5 bg-blue-100 text-blue-700 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide">Dikuasakan ToyyibPay</span>
                         </div>
                     </label>
