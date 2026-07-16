@@ -32,8 +32,10 @@ class CheckoutController extends Controller
         }
 
         $subtotal = 0;
+        $totalWeight = 0;
         foreach ($cartItems as $item) {
             $subtotal += $item->subtotal;
+            $totalWeight += ($item->product->weight ?? 0.50) * $item->quantity;
         }
 
         // Apply coupon if valid
@@ -52,7 +54,27 @@ class CheckoutController extends Controller
 
         $total = max(0.00, $subtotal - $discount);
 
-        return view('shop.checkout', compact('cartItems', 'subtotal', 'discount', 'total', 'couponCode'));
+        return view('shop.checkout', compact('cartItems', 'subtotal', 'discount', 'total', 'couponCode', 'totalWeight'));
+    }
+
+    // AJAX Endpoint to get shipping rates
+    public function getShippingRates(Request $request)
+    {
+        $postcode = $request->get('postcode');
+        $state = $request->get('state');
+        $weight = $request->get('weight', 0.50);
+
+        if (!$postcode || strlen($postcode) < 5) {
+            return response()->json(['success' => false, 'message' => 'Poskod tidak sah']);
+        }
+
+        $easyParcel = new \App\Services\EasyParcelService();
+        $rates = $easyParcel->getRates($postcode, $weight, $state);
+
+        return response()->json([
+            'success' => true,
+            'rates' => $rates
+        ]);
     }
 
     // Place Order
@@ -66,8 +88,14 @@ class CheckoutController extends Controller
         $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
             'customer_name'    => 'required|string|max:255',
             'customer_phone'   => 'required|string|max:20',
-            'delivery_address' => 'required|string',
+            'street_address'   => 'required|string',
+            'postcode'         => 'required|string|max:10',
+            'city'             => 'required|string|max:255',
+            'state'            => 'required|string|max:255',
             'payment_method'   => 'required|in:cod,online',
+            'shipping_courier' => 'nullable|string',
+            'shipping_service' => 'nullable|string',
+            'shipping_cost'    => 'nullable|numeric',
         ]);
 
         if ($validator->fails()) {
@@ -112,7 +140,13 @@ class CheckoutController extends Controller
             }
         }
 
-        $total = max(0.00, $subtotal - $discount);
+        $shippingCost = (float)$request->input('shipping_cost', 0.00);
+        $total = max(0.00, $subtotal - $discount + $shippingCost);
+
+        $deliveryAddress = $request->input('street_address') . ', ' .
+                           $request->input('postcode') . ' ' .
+                           $request->input('city') . ', ' .
+                           $request->input('state');
 
         // Run DB Transaction to ensure atomicity
         DB::beginTransaction();
@@ -124,12 +158,18 @@ class CheckoutController extends Controller
                 'customer_name' => $request->customer_name,
                 'customer_email' => $user->email,
                 'customer_phone' => $request->customer_phone,
-                'delivery_address' => $request->delivery_address,
+                'delivery_address' => $deliveryAddress,
                 'total_amount' => $subtotal,
                 'discount_amount' => $discount,
+                'shipping_cost' => $shippingCost,
                 'final_amount' => $total,
                 'coupon_code' => $couponCode,
                 'status' => 'pending',
+                'shipping_courier' => $request->input('shipping_courier'),
+                'shipping_service' => $request->input('shipping_service'),
+                'shipping_postcode' => $request->input('postcode'),
+                'shipping_city' => $request->input('city'),
+                'shipping_state' => $request->input('state'),
             ]);
 
             // 2. Create order items and decrement stock

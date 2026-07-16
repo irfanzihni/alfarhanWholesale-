@@ -362,6 +362,37 @@ class AdminController extends Controller
         return back()->with('success', 'Order status updated to ' . ucfirst($request->status) . '.');
     }
 
+    // Book shipment with EasyParcel
+    public function bookCourier($id)
+    {
+        $this->checkAccess(['admin', 'storekeeper']);
+
+        $order = Order::with('items.product')->findOrFail($id);
+
+        if (empty($order->shipping_courier)) {
+            return back()->with('error', 'Sila pilih kurier untuk pesanan ini terlebih dahulu.');
+        }
+
+        if (!empty($order->tracking_code)) {
+            return back()->with('error', 'Pesanan ini sudah mempunyai kod penjejakan: ' . $order->tracking_code);
+        }
+
+        $easyParcel = new \App\Services\EasyParcelService();
+        $result = $easyParcel->createShipment($order);
+
+        if (isset($result['status']) && $result['status'] === 'Success') {
+            $order->tracking_code = $result['tracking_code'];
+            $order->easyparcel_order_id = $result['easyparcel_order_id'];
+            $order->status = 'processing';
+            $order->save();
+
+            return back()->with('success', 'Tempahan kurier berjaya! Kod Penjejakan: ' . $result['tracking_code']);
+        } else {
+            $msg = $result['message'] ?? 'Ralat EasyParcel API yang tidak diketahui.';
+            return back()->with('error', 'Gagal menempah kurier: ' . $msg);
+        }
+    }
+
     // ----------------------------------------------------
     // REPORTS GENERATION
     // ----------------------------------------------------

@@ -39,6 +39,16 @@
                             <span class="font-bold text-slate-800 block">{{ $order->customer_name }}</span>
                             <span class="text-xs text-slate-500 block">{{ $order->customer_phone }}</span>
                             <span class="text-[10px] text-slate-400 block max-w-[150px] truncate" title="{{ $order->delivery_address }}">{{ $order->delivery_address }}</span>
+                            @if($order->shipping_courier)
+                                <span class="text-[10px] text-slate-600 block mt-1 font-bold">
+                                    🚚 {{ $order->shipping_courier }} (RM{{ number_format($order->shipping_cost, 2) }})
+                                </span>
+                                @if($order->tracking_code)
+                                    <a href="https://easyparcel.com/my/en/track/?noc=2&cno={{ $order->tracking_code }}" target="_blank" class="text-[9px] text-emerald-700 hover:text-emerald-950 font-bold block mt-0.5 underline">
+                                        Tracking: {{ $order->tracking_code }}
+                                    </a>
+                                @endif
+                            @endif
                         </td>
 
                         <!-- Type -->
@@ -94,6 +104,15 @@
                                     Update
                                 </button>
                             </form>
+                            @if($order->order_type === 'online' && $order->shipping_courier && !$order->tracking_code)
+                                <form action="{{ route('admin.orders.book_courier', $order->id) }}" method="POST" class="mt-2 flex justify-end">
+                                    @csrf
+                                    <button type="submit" class="bg-indigo-600 hover:bg-indigo-800 text-white text-[10px] px-2.5 py-1.5 rounded-lg transition-colors font-bold shadow-xs flex items-center gap-1">
+                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
+                                        Tempah Kurier
+                                    </button>
+                                </form>
+                            @endif
                         </td>
                     </tr>
                 @empty

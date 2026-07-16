@@ -35,4 +35,15 @@ return [
         ],
     ],
 
+    'easyparcel' => [
+        'api_key' => env('EASYPARCEL_API_KEY'),
+        'sandbox' => env('EASYPARCEL_SANDBOX', true),
+        'origin_postcode' => env('EASYPARCEL_ORIGIN_POSTCODE', '47100'),
+        'origin_city' => env('EASYPARCEL_ORIGIN_CITY', 'Puchong'),
+        'origin_state' => env('EASYPARCEL_ORIGIN_STATE', 'Selangor'),
+        'origin_name' => env('EASYPARCEL_ORIGIN_NAME', 'Alfarhan Trading'),
+        'origin_phone' => env('EASYPARCEL_ORIGIN_PHONE', '0123456789'),
+        'origin_address' => env('EASYPARCEL_ORIGIN_ADDRESS', 'No 1, Jalan Puchong, Industri Puchong'),
+    ],
+
 ];

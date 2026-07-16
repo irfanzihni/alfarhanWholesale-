@@ -63,6 +63,7 @@ Route::middleware('auth')->group(function () {
 
         // Checkout
         Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
+        Route::get('/checkout/shipping-rates', [CheckoutController::class, 'getShippingRates'])->name('checkout.shipping_rates');
         Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
         Route::get('/checkout/success/{id}', [CheckoutController::class, 'success'])->name('checkout.success');
 
@@ -102,6 +103,7 @@ Route::middleware('auth')->group(function () {
             // Storekeeper Role: Order Fulfillment
             Route::get('/orders', [AdminController::class, 'orderList'])->name('admin.orders');
             Route::post('/orders/{id}/status', [AdminController::class, 'updateOrderStatus'])->name('admin.orders.status');
+            Route::post('/orders/{id}/book-courier', [AdminController::class, 'bookCourier'])->name('admin.orders.book_courier');
 
             // Reports View
             Route::get('/reports', [AdminController::class, 'reports'])->name('admin.reports');

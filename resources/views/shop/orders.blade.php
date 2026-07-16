@@ -46,6 +46,14 @@
                                 @foreach($order->items as $item)
                                     {{ $item->product->name }} (x{{ $item->quantity }}){{ !$loop->last ? ', ' : '' }}
                                 @endforeach
+                                @if($order->shipping_courier)
+                                    <span class="block text-[10px] text-slate-400 mt-1">
+                                        Kurier: {{ $order->shipping_courier }}
+                                        @if($order->tracking_code)
+                                            | Tracking: <span class="text-emerald-700 font-bold">{{ $order->tracking_code }}</span>
+                                        @endif
+                                    </span>
+                                @endif
                             </td>
                             <td class="p-5 font-bold text-emerald-800">
                                 RM{{ number_format($order->final_amount, 2) }}
@@ -116,6 +124,15 @@
                         @foreach($order->items as $item)
                             <p>{{ $item->product->name }} <span class="text-emerald-700 font-bold">x{{ $item->quantity }}</span></p>
                         @endforeach
+
+                        @if($order->shipping_courier)
+                            <div class="mt-2 text-[10px] text-slate-400 bg-slate-50 p-2 rounded-md border border-slate-100">
+                                <span class="font-semibold text-slate-600">Kurier:</span> {{ $order->shipping_courier }}
+                                @if($order->tracking_code)
+                                    <span class="block mt-0.5">Tracking: <strong class="text-emerald-700">{{ $order->tracking_code }}</strong></span>
+                                @endif
+                            </div>
+                        @endif
                     </div>
 
                     <div class="flex justify-between items-center border-t border-slate-100 pt-3">

@@ -24,6 +24,14 @@ class Order extends Model
         'payment_ref',
         'paid_at',
         'created_by', // sales agent user id
+        'shipping_courier',
+        'shipping_service',
+        'shipping_cost',
+        'shipping_postcode',
+        'shipping_city',
+        'shipping_state',
+        'tracking_code',
+        'easyparcel_order_id',
     ];
 
     protected $casts = [

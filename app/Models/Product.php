@@ -15,6 +15,7 @@ class Product extends Model
         'discount_price',
         'stock',
         'image_url',
+        'weight',
     ];
 
     public function variations(): HasMany
