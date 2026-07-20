@@ -4,26 +4,6 @@
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
     <h1 class="text-3xl font-extrabold text-slate-900 mb-8 serif-font">Checkout</h1>
 
-    {{-- ===== SANDBOX / SIMULASI BANNER ===== --}}
-    @if($sandboxMode ?? false)
-    <div class="mb-6 bg-amber-50 border-2 border-amber-400 rounded-2xl p-4 flex items-start gap-3">
-        <div class="shrink-0 mt-0.5">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-amber-600" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
-            </svg>
-        </div>
-        <div>
-            <p class="text-sm font-bold text-amber-800">🧪 Mode Ujian / Simulasi Pembayaran</p>
-            <p class="text-xs text-amber-700 mt-0.5">
-                Sistem pembayaran sedang dalam <strong>mod sandbox (ujian)</strong>. Tiada bayaran sebenar akan diproses.
-                Pilihan <strong>Online Banking / eWallet</strong> akan melalui simulasi — pesanan akan ditandakan selesai tanpa transaksi bank sebenar.
-                Fungsi ini akan diaktifkan sepenuhnya setelah pengesahan akaun ToyyibPay diterima.
-            </p>
-        </div>
-    </div>
-    @endif
-    {{-- ===================================== --}}
-
     <form action="{{ route('checkout.store') }}" method="POST" class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
         @csrf
 
