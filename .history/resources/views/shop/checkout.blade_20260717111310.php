@@ -4,26 +4,6 @@
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
     <h1 class="text-3xl font-extrabold text-slate-900 mb-8 serif-font">Checkout</h1>
 
-    {{-- ===== SANDBOX / SIMULASI BANNER ===== --}}
-    @if($sandboxMode ?? false)
-    <div class="mb-6 bg-amber-50 border-2 border-amber-400 rounded-2xl p-4 flex items-start gap-3">
-        <div class="shrink-0 mt-0.5">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-amber-600" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
-            </svg>
-        </div>
-        <div>
-            <p class="text-sm font-bold text-amber-800">🧪 Mode Ujian / Simulasi Pembayaran</p>
-            <p class="text-xs text-amber-700 mt-0.5">
-                Sistem pembayaran sedang dalam <strong>mod sandbox (ujian)</strong>. Tiada bayaran sebenar akan diproses.
-                Pilihan <strong>Online Banking / eWallet</strong> akan melalui simulasi — pesanan akan ditandakan selesai tanpa transaksi bank sebenar.
-                Fungsi ini akan diaktifkan sepenuhnya setelah pengesahan akaun ToyyibPay diterima.
-            </p>
-        </div>
-    </div>
-    @endif
-    {{-- ===================================== --}}
-
     <form action="{{ route('checkout.store') }}" method="POST" class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
         @csrf
 
@@ -37,40 +17,55 @@
                     <div>
                         <label for="customer_name" class="block text-sm font-semibold text-slate-700">Full Name</label>
                         <input type="text" name="customer_name" id="customer_name" value="{{ old('customer_name', auth()->user()->name) }}" required
-                               class="w-full mt-1.5 px-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-transparent transition-all">
+                               class="w-full mt-1.5 px-4 py-2.5 border @error('customer_name') border-rose-500 @else border-slate-200 @enderror rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-transparent transition-all">
+                        @error('customer_name')
+                            <p class="text-rose-600 text-xs mt-1 font-medium">{{ $message }}</p>
+                        @enderror
                     </div>
                     <div>
                         <label for="customer_phone" class="block text-sm font-semibold text-slate-700">Phone Number</label>
                         <input type="text" name="customer_phone" id="customer_phone" value="{{ old('customer_phone') }}" required
-                               class="w-full mt-1.5 px-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-transparent transition-all"
+                               class="w-full mt-1.5 px-4 py-2.5 border @error('customer_phone') border-rose-500 @else border-slate-200 @enderror rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-transparent transition-all"
                                placeholder="e.g. 01X XXXXXXXX">
+                        @error('customer_phone')
+                            <p class="text-rose-600 text-xs mt-1 font-medium">{{ $message }}</p>
+                        @enderror
                     </div>
                 </div>
 
                 <div>
                     <label for="street_address" class="block text-sm font-semibold text-slate-700">Street Address</label>
                     <input type="text" name="street_address" id="street_address" value="{{ old('street_address') }}" required
-                           class="w-full mt-1.5 px-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-transparent transition-all"
+                           class="w-full mt-1.5 px-4 py-2.5 border @error('street_address') border-rose-500 @else border-slate-200 @enderror rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-transparent transition-all"
                            placeholder="No, Jalan, Taman/Seksyen">
+                    @error('street_address')
+                        <p class="text-rose-600 text-xs mt-1 font-medium">{{ $message }}</p>
+                    @enderror
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div>
                         <label for="postcode" class="block text-sm font-semibold text-slate-700">Postcode</label>
                         <input type="text" name="postcode" id="postcode" value="{{ old('postcode') }}" required
-                               class="w-full mt-1.5 px-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-transparent transition-all"
+                               class="w-full mt-1.5 px-4 py-2.5 border @error('postcode') border-rose-500 @else border-slate-200 @enderror rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-transparent transition-all"
                                placeholder="e.g. 47100" maxlength="5">
+                        @error('postcode')
+                            <p class="text-rose-600 text-xs mt-1 font-medium">{{ $message }}</p>
+                        @enderror
                     </div>
                     <div>
                         <label for="city" class="block text-sm font-semibold text-slate-700">City</label>
                         <input type="text" name="city" id="city" value="{{ old('city') }}" required
-                               class="w-full mt-1.5 px-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-transparent transition-all"
+                               class="w-full mt-1.5 px-4 py-2.5 border @error('city') border-rose-500 @else border-slate-200 @enderror rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-transparent transition-all"
                                placeholder="e.g. Puchong">
+                        @error('city')
+                            <p class="text-rose-600 text-xs mt-1 font-medium">{{ $message }}</p>
+                        @enderror
                     </div>
                     <div>
                         <label for="state" class="block text-sm font-semibold text-slate-700">State</label>
                         <select name="state" id="state" required
-                                class="w-full mt-1.5 px-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-transparent transition-all">
+                                class="w-full mt-1.5 px-4 py-2.5 border @error('state') border-rose-500 @else border-slate-200 @enderror rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-transparent transition-all">
                             <option value="">Pilih Negeri</option>
                             <option value="Johor">Johor</option>
                             <option value="Kedah">Kedah</option>
@@ -89,70 +84,16 @@
                             <option value="Sabah">Sabah</option>
                             <option value="Labuan">Labuan</option>
                         </select>
+                        @error('state')
+                            <p class="text-rose-600 text-xs mt-1 font-medium">{{ $message }}</p>
+                        @enderror
                     </div>
                 </div>
             </div>
 
-            {{-- ======================================================= --}}
-            {{-- SHIPPING METHOD — Self Pickup (always shown) + Courier   --}}
-            {{-- ======================================================= --}}
-            <div class="bg-white border border-emerald-100 rounded-2xl shadow-xs p-6 md:p-8 space-y-4">
-                <h3 class="text-lg font-bold text-emerald-950 border-b border-emerald-50 pb-2">Kaedah Penghantaran</h3>
-
-                {{-- Hidden field to pass shipping method --}}
-                <input type="hidden" name="shipping_method" id="shipping_method" value="delivery">
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-                    {{-- Option A: Courier Delivery --}}
-                    <label id="shipping-method-delivery-label"
-                           class="border-2 border-emerald-500 bg-emerald-50 rounded-xl p-4 flex items-start gap-3 cursor-pointer hover:bg-emerald-50/80 transition-all">
-                        <input type="radio" name="shipping_method_radio" id="shipping-method-delivery" value="delivery" checked
-                               class="h-4 w-4 text-emerald-600 focus:ring-emerald-500 mt-0.5">
-                        <div>
-                            <span class="block font-bold text-sm text-slate-800">🚚 Penghantaran Kurier</span>
-                            <span class="block text-xs text-slate-500 mt-0.5">Hantar ke alamat anda. Kadar dikira berdasarkan poskod.</span>
-                        </div>
-                    </label>
-
-                    {{-- Option B: Self Pickup --}}
-                    <label id="shipping-method-pickup-label"
-                           class="border-2 border-slate-200 rounded-xl p-4 flex items-start gap-3 cursor-pointer hover:bg-slate-50 transition-all">
-                        <input type="radio" name="shipping_method_radio" id="shipping-method-pickup" value="self_pickup"
-                               class="h-4 w-4 text-emerald-600 focus:ring-emerald-500 mt-0.5">
-                        <div>
-                            <span class="block font-bold text-sm text-slate-800">🏪 Ambil Sendiri (Self Pickup)</span>
-                            <span class="block text-xs text-slate-500 mt-0.5">Ambil di kedai kami. Percuma, tiada kos penghantaran.</span>
-                            <span class="inline-block mt-1.5 bg-emerald-100 text-emerald-700 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide">RM0.00</span>
-                        </div>
-                    </label>
-                </div>
-
-                {{-- Self Pickup Address Info Box (hidden by default) --}}
-                <div id="self-pickup-info" class="hidden">
-                    <div class="mt-3 bg-emerald-50 border border-emerald-200 rounded-xl p-4 flex items-start gap-3">
-                        <div class="shrink-0 mt-0.5">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-emerald-600" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/>
-                            </svg>
-                        </div>
-                        <div class="space-y-1">
-                            <p class="text-sm font-bold text-emerald-900">📍 Alamat Pengambilan</p>
-                            <p class="text-sm font-semibold text-slate-800">{{ $pickupAddress['name'] }}</p>
-                            <p class="text-sm text-slate-600">{{ $pickupAddress['address'] }}</p>
-                            <p class="text-sm text-slate-600">{{ $pickupAddress['postcode'] }} {{ $pickupAddress['city'] }}, {{ $pickupAddress['state'] }}</p>
-                            <p class="text-sm text-slate-600">📞 {{ $pickupAddress['phone'] }}</p>
-                            <div class="mt-2 pt-2 border-t border-emerald-200">
-                                <p class="text-[11px] text-emerald-700 font-semibold">⏰ Sila hubungi kami terlebih dahulu untuk sahkan waktu pengambilan sebelum datang.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {{-- Courier Rate Selection (shown only for delivery mode) --}}
+            <!-- Courier Service Selection -->
             <div id="courier-card" class="bg-white border border-emerald-100 rounded-2xl shadow-xs p-6 md:p-8 space-y-4 hidden">
-                <h3 class="text-lg font-bold text-emerald-950 border-b border-emerald-50 pb-2">Pilihan Kurier</h3>
+                <h3 class="text-lg font-bold text-emerald-950 border-b border-emerald-50 pb-2">Courier Option (Real-time)</h3>
                 <p class="text-xs text-slate-500">Sila masukkan poskod dan negeri yang betul untuk mengira kadar kurier.</p>
                 
                 <input type="hidden" name="shipping_courier" id="shipping_courier">
@@ -160,7 +101,7 @@
                 <input type="hidden" name="shipping_cost" id="shipping_cost" value="0.00">
 
                 <div id="courier-list" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {{-- Dynamic couriers loaded via JS --}}
+                    <!-- Dynamic couriers loaded via JS -->
                 </div>
                 
                 <div id="courier-loading" class="hidden text-center py-6">
@@ -168,7 +109,7 @@
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
-                    <p class="text-xs text-slate-500 mt-2 font-medium">Mencari kadar courier terbaik...</p>
+                    <p class="text-xs text-slate-500 mt-2 font-medium">Mencari kadar kurier terbaik...</p>
                 </div>
             </div>
 
@@ -177,8 +118,11 @@
                 <h3 class="text-lg font-bold text-emerald-950 border-b border-emerald-50 pb-2">Payment Method</h3>
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    @error('payment_method')
+                        <p class="text-rose-600 text-xs font-medium col-span-2">{{ $message }}</p>
+                    @enderror
                     <!-- COD -->
-                    <label id="label-cod" class="border-2 border-emerald-200 bg-emerald-50/10 rounded-xl p-4 flex items-center gap-3 cursor-pointer hover:bg-emerald-50/30 transition-all has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-50">
+                    <label id="label-cod" class="border-2 border-emerald-200 bg-emerald-50/10 rounded-xl p-4 flex items-center gap-3 cursor-pointer hover:bg-emerald-50/30 transition-all @error('payment_method') border-rose-500 @enderror">
                         <input type="radio" name="payment_method" value="cod" checked 
                                class="h-4 w-4 text-emerald-600 focus:ring-emerald-500">
                         <div>
@@ -188,7 +132,7 @@
                     </label>
 
                     <!-- Online Banking / eWallet via ToyyibPay -->
-                    <label id="label-online" class="border-2 border-slate-200 rounded-xl p-4 flex items-center gap-3 cursor-pointer hover:bg-slate-50 transition-all has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-50">
+                    <label id="label-online" class="border-2 border-slate-200 rounded-xl p-4 flex items-center gap-3 cursor-pointer hover:bg-slate-50 transition-all">
                         <input type="radio" name="payment_method" value="online"
                                class="h-4 w-4 text-emerald-600 focus:ring-emerald-500">
                         <div>
@@ -266,129 +210,46 @@
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        const postcodeField  = document.getElementById('postcode');
-        const stateField     = document.getElementById('state');
-        const courierCard    = document.getElementById('courier-card');
-        const courierList    = document.getElementById('courier-list');
+        const postcodeField = document.getElementById('postcode');
+        const stateField = document.getElementById('state');
+        const courierCard = document.getElementById('courier-card');
+        const courierList = document.getElementById('courier-list');
         const courierLoading = document.getElementById('courier-loading');
-
+        
         const shippingCourierInput = document.getElementById('shipping_courier');
         const shippingServiceInput = document.getElementById('shipping_service');
-        const shippingCostInput    = document.getElementById('shipping_cost');
-        const shippingMethodInput  = document.getElementById('shipping_method');
-
-        const shippingFeeRow       = document.getElementById('shipping-fee-row');
+        const shippingCostInput = document.getElementById('shipping_cost');
+        
+        const shippingFeeRow = document.getElementById('shipping-fee-row');
         const shippingCourierNameSpan = document.getElementById('shipping-courier-name');
-        const shippingFeeAmountSpan   = document.getElementById('shipping-fee-amount');
-        const grandTotalTextSpan   = document.querySelector('.text-emerald-800.text-lg');
-        const checkoutSubmitBtn    = document.getElementById('checkout-submit-btn');
+        const shippingFeeAmountSpan = document.getElementById('shipping-fee-amount');
+        const grandTotalTextSpan = document.querySelector('.text-emerald-800.text-lg');
+        const checkoutSubmitBtn = document.getElementById('checkout-submit-btn');
 
-        // Shipping method radio buttons
-        const radioDelivery = document.getElementById('shipping-method-delivery');
-        const radioPickup   = document.getElementById('shipping-method-pickup');
-        const labelDelivery = document.getElementById('shipping-method-delivery-label');
-        const labelPickup   = document.getElementById('shipping-method-pickup-label');
-        const selfPickupInfo = document.getElementById('self-pickup-info');
+        const subtotal = {{ $subtotal }};
+        const discount = {{ $discount }};
+        const totalWeight = {{ $totalWeight ?? 0 }};
 
-        // Address fields that become optional for self pickup
-        const addressFields = [
-            document.getElementById('street_address'),
-            document.getElementById('postcode'),
-            document.getElementById('city'),
-            document.getElementById('state'),
-        ];
-
-        const subtotal    = {{ $subtotal }};
-        const discount    = {{ $discount }};
-        const totalWeight = {{ $totalWeight }};
-
-        // ── Shipping method toggle ─────────────────────────────────────────
-        function setShippingMethod(method) {
-            shippingMethodInput.value = method;
-
-            if (method === 'self_pickup') {
-                // Show pickup info, hide courier card
-                selfPickupInfo.classList.remove('hidden');
-                courierCard.classList.add('hidden');
-
-                // Style labels
-                labelPickup.classList.add('border-emerald-500', 'bg-emerald-50');
-                labelPickup.classList.remove('border-slate-200');
-                labelDelivery.classList.remove('border-emerald-500', 'bg-emerald-50');
-                labelDelivery.classList.add('border-slate-200');
-
-                // Address fields become optional
-                addressFields.forEach(f => { if (f) f.removeAttribute('required'); });
-
-                // Reset courier selection
-                shippingCourierInput.value = '';
-                shippingServiceInput.value = '';
-                shippingCostInput.value    = '0.00';
-                shippingFeeRow.classList.add('hidden');
-
-                // Update totals: shipping = 0
-                updateTotals(0);
-            } else {
-                // Show courier card if postcode filled
-                selfPickupInfo.classList.add('hidden');
-
-                // Style labels
-                labelDelivery.classList.add('border-emerald-500', 'bg-emerald-50');
-                labelDelivery.classList.remove('border-slate-200');
-                labelPickup.classList.remove('border-emerald-500', 'bg-emerald-50');
-                labelPickup.classList.add('border-slate-200');
-
-                // Address fields become required again
-                const textFields = [document.getElementById('street_address'), document.getElementById('city')];
-                textFields.forEach(f => { if (f) f.setAttribute('required', 'required'); });
-                const postcodeEl = document.getElementById('postcode');
-                if (postcodeEl) postcodeEl.setAttribute('required', 'required');
-                const stateEl = document.getElementById('state');
-                if (stateEl) stateEl.setAttribute('required', 'required');
-
-                // Re-fetch rates if postcode already filled
-                if (postcodeField.value.length === 5 && stateField.value) {
-                    fetchRates();
-                }
-            }
-        }
-
-        radioDelivery.addEventListener('change', () => setShippingMethod('delivery'));
-        radioPickup.addEventListener('change',   () => setShippingMethod('self_pickup'));
-
-        // ── Shipping fee row label update ─────────────────────────────────
-        function updateShippingFeeLabel(courierName) {
-            shippingCourierNameSpan.textContent = courierName;
-        }
-
-        // ── Totals update ─────────────────────────────────────────────────
-        function updateTotals(shippingFee) {
-            const grandTotal = Math.max(0, subtotal - discount + shippingFee);
-            if (grandTotalTextSpan) grandTotalTextSpan.textContent = 'RM' + grandTotal.toFixed(2);
-            if (checkoutSubmitBtn)  checkoutSubmitBtn.textContent  = `Teruskan Pembayaran (RM${grandTotal.toFixed(2)})`;
-        }
-
-        // ── Fetch courier rates ───────────────────────────────────────────
         function fetchRates() {
-            if (shippingMethodInput.value === 'self_pickup') return;
-
             const postcode = postcodeField.value.trim();
-            const state    = stateField.value;
+            const state = stateField.value;
 
             if (postcode.length === 5 && state) {
+                // Show loading
                 courierCard.classList.remove('hidden');
                 courierLoading.classList.remove('hidden');
                 courierList.classList.add('hidden');
                 courierList.innerHTML = '';
-
+                
+                // Clear selection
                 shippingCourierInput.value = '';
                 shippingServiceInput.value = '';
-                shippingCostInput.value    = '0.00';
+                shippingCostInput.value = '0.00';
                 shippingFeeRow.classList.add('hidden');
                 updateTotals(0);
 
                 fetch(`/checkout/shipping-rates?postcode=${postcode}&state=${state}&weight=${totalWeight}`)
-                    .then(r => r.json())
+                    .then(response => response.json())
                     .then(data => {
                         courierLoading.classList.add('hidden');
                         courierList.classList.remove('hidden');
@@ -407,7 +268,10 @@
                                     </div>
                                     <span class="font-extrabold text-sm text-emerald-800">RM${rate.price.toFixed(2)}</span>
                                 `;
+
+                                // Listen for click/change
                                 card.querySelector('input').addEventListener('change', function () {
+                                    // Highlight selected
                                     document.querySelectorAll('#courier-list label').forEach(l => {
                                         l.classList.remove('border-emerald-500', 'bg-emerald-50');
                                         l.classList.add('border-slate-200', 'bg-white');
@@ -415,15 +279,19 @@
                                     card.classList.remove('border-slate-200', 'bg-white');
                                     card.classList.add('border-emerald-500', 'bg-emerald-50');
 
+                                    // Set hidden inputs
                                     shippingCourierInput.value = this.dataset.courier;
                                     shippingServiceInput.value = this.dataset.service;
-                                    shippingCostInput.value    = this.dataset.price;
+                                    shippingCostInput.value = this.dataset.price;
 
-                                    updateShippingFeeLabel(this.dataset.courier);
+                                    // Update summary UI
+                                    shippingCourierNameSpan.textContent = this.dataset.courier;
                                     shippingFeeAmountSpan.textContent = 'RM' + parseFloat(this.dataset.price).toFixed(2);
                                     shippingFeeRow.classList.remove('hidden');
+
                                     updateTotals(parseFloat(this.dataset.price));
                                 });
+
                                 courierList.appendChild(card);
                             });
                         } else {
@@ -439,8 +307,24 @@
             }
         }
 
+        function updateTotals(shippingFee) {
+            const grandTotal = Math.max(0, subtotal - discount + shippingFee);
+            
+            // Grand Total text
+            if (grandTotalTextSpan) {
+                grandTotalTextSpan.textContent = 'RM' + grandTotal.toFixed(2);
+            }
+            
+            // Payment button text
+            if (checkoutSubmitBtn) {
+                checkoutSubmitBtn.textContent = `Teruskan Pembayaran (RM${grandTotal.toFixed(2)})`;
+            }
+        }
+
         postcodeField.addEventListener('input', function() {
-            if (this.value.length === 5) fetchRates();
+            if (this.value.length === 5) {
+                fetchRates();
+            }
         });
         stateField.addEventListener('change', fetchRates);
     });

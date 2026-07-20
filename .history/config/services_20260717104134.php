@@ -35,7 +35,7 @@ return [
         ],
     ],
 
-    'easyparcel' => [
+'easyparcel' => [
         'api_key' => env('EASYPARCEL_API_KEY'),
         // Force real booking by default. Set EASYPARCEL_SANDBOX=true only for testing.
         'sandbox' => env('EASYPARCEL_SANDBOX', false),

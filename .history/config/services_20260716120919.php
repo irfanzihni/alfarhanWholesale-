@@ -37,8 +37,7 @@ return [
 
     'easyparcel' => [
         'api_key' => env('EASYPARCEL_API_KEY'),
-        // Force real booking by default. Set EASYPARCEL_SANDBOX=true only for testing.
-        'sandbox' => env('EASYPARCEL_SANDBOX', false),
+        'sandbox' => env('EASYPARCEL_SANDBOX', true),
         'origin_postcode' => env('EASYPARCEL_ORIGIN_POSTCODE', '47100'),
         'origin_city' => env('EASYPARCEL_ORIGIN_CITY', 'Puchong'),
         'origin_state' => env('EASYPARCEL_ORIGIN_STATE', 'Selangor'),

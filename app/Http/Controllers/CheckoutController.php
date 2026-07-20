@@ -54,7 +54,19 @@ class CheckoutController extends Controller
 
         $total = max(0.00, $subtotal - $discount);
 
-        return view('shop.checkout', compact('cartItems', 'subtotal', 'discount', 'total', 'couponCode', 'totalWeight'));
+        $sandboxMode = config('payment.toyyibpay.sandbox', false);
+
+        // Pickup address for self-collection option
+        $pickupAddress = [
+            'name'    => env('EASYPARCEL_ORIGIN_NAME', 'Alfarhan Trading'),
+            'address' => env('EASYPARCEL_ORIGIN_ADDRESS', '-'),
+            'city'    => env('EASYPARCEL_ORIGIN_CITY', 'Puchong'),
+            'state'   => env('EASYPARCEL_ORIGIN_STATE', 'Selangor'),
+            'postcode'=> env('EASYPARCEL_ORIGIN_POSTCODE', '47100'),
+            'phone'   => env('EASYPARCEL_ORIGIN_PHONE', '-'),
+        ];
+
+        return view('shop.checkout', compact('cartItems', 'subtotal', 'discount', 'total', 'couponCode', 'totalWeight', 'sandboxMode', 'pickupAddress'));
     }
 
     // AJAX Endpoint to get shipping rates
@@ -85,14 +97,17 @@ class CheckoutController extends Controller
             return redirect()->route('login')->with('error', 'Please login to place an order.');
         }
 
+        $isSelfPickup = $request->input('shipping_method') === 'self_pickup';
+
         $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
             'customer_name'    => 'required|string|max:255',
             'customer_phone'   => 'required|string|max:20',
-            'street_address'   => 'required|string',
-            'postcode'         => 'required|string|max:10',
-            'city'             => 'required|string|max:255',
-            'state'            => 'required|string|max:255',
+            'street_address'   => $isSelfPickup ? 'nullable|string' : 'required|string',
+            'postcode'         => $isSelfPickup ? 'nullable|string|max:10' : 'required|string|max:10',
+            'city'             => $isSelfPickup ? 'nullable|string|max:255' : 'required|string|max:255',
+            'state'            => $isSelfPickup ? 'nullable|string|max:255' : 'required|string|max:255',
             'payment_method'   => 'required|in:cod,online',
+            'shipping_method'  => 'nullable|string',
             'shipping_courier' => 'nullable|string',
             'shipping_service' => 'nullable|string',
             'shipping_cost'    => 'nullable|numeric',
@@ -140,13 +155,23 @@ class CheckoutController extends Controller
             }
         }
 
-        $shippingCost = (float)$request->input('shipping_cost', 0.00);
-        $total = max(0.00, $subtotal - $discount + $shippingCost);
+        // Self Pickup: override shipping cost and delivery address
+        if ($isSelfPickup) {
+            $shippingCost    = 0.00;
+            $deliveryAddress = 'SELF PICKUP — ' .
+                               env('EASYPARCEL_ORIGIN_ADDRESS', '-') . ', ' .
+                               env('EASYPARCEL_ORIGIN_POSTCODE', '') . ' ' .
+                               env('EASYPARCEL_ORIGIN_CITY', '') . ', ' .
+                               env('EASYPARCEL_ORIGIN_STATE', '');
+        } else {
+            $shippingCost    = (float) $request->input('shipping_cost', 0.00);
+            $deliveryAddress = $request->input('street_address') . ', ' .
+                               $request->input('postcode') . ' ' .
+                               $request->input('city') . ', ' .
+                               $request->input('state');
+        }
 
-        $deliveryAddress = $request->input('street_address') . ', ' .
-                           $request->input('postcode') . ' ' .
-                           $request->input('city') . ', ' .
-                           $request->input('state');
+        $total = max(0.00, $subtotal - $discount + $shippingCost);
 
         // Run DB Transaction to ensure atomicity
         DB::beginTransaction();
@@ -165,11 +190,11 @@ class CheckoutController extends Controller
                 'final_amount' => $total,
                 'coupon_code' => $couponCode,
                 'status' => 'pending',
-                'shipping_courier' => $request->input('shipping_courier'),
-                'shipping_service' => $request->input('shipping_service'),
-                'shipping_postcode' => $request->input('postcode'),
-                'shipping_city' => $request->input('city'),
-                'shipping_state' => $request->input('state'),
+                'shipping_courier' => $isSelfPickup ? 'Self Pickup' : $request->input('shipping_courier'),
+                'shipping_service' => $isSelfPickup ? 'Self Collection' : $request->input('shipping_service'),
+                'shipping_postcode' => $isSelfPickup ? env('EASYPARCEL_ORIGIN_POSTCODE') : $request->input('postcode'),
+                'shipping_city'     => $isSelfPickup ? env('EASYPARCEL_ORIGIN_CITY') : $request->input('city'),
+                'shipping_state'    => $isSelfPickup ? env('EASYPARCEL_ORIGIN_STATE') : $request->input('state'),
             ]);
 
             // 2. Create order items and decrement stock

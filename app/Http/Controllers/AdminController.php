@@ -90,6 +90,11 @@ class AdminController extends Controller
             'discount_price' => 'nullable|numeric|min:0|lt:base_price',
             'stock' => 'required|integer|min:0',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:4096',
+            'variations' => 'nullable|array',
+            'variations.*.name' => 'required_with:variations|string|max:255',
+            'variations.*.value' => 'required_with:variations|string|max:255',
+            'variations.*.price' => 'nullable|numeric|min:0',
+            'variations.*.stock' => 'required_with:variations|integer|min:0',
         ]);
 
         $imagePath = 'images/products/placeholder.jpg';
@@ -97,7 +102,7 @@ class AdminController extends Controller
             $imagePath = $this->uploadProductImage($request->file('image'));
         }
 
-        Product::create([
+        $product = Product::create([
             'name' => $request->name,
             'description' => $request->description,
             'category' => $request->category,
@@ -107,7 +112,22 @@ class AdminController extends Controller
             'image_url' => $imagePath,
         ]);
 
-        return redirect()->route('admin.products')->with('success', 'Product created successfully.');
+        // Process inline variations if submitted
+        if ($request->filled('variations')) {
+            foreach ($request->variations as $varData) {
+                if (!empty($varData['name']) && !empty($varData['value'])) {
+                    ProductVariation::create([
+                        'product_id' => $product->id,
+                        'name'       => $varData['name'],
+                        'value'      => $varData['value'],
+                        'price'      => $varData['price'] ?: null,
+                        'stock'      => (int) ($varData['stock'] ?? 0),
+                    ]);
+                }
+            }
+        }
+
+        return redirect()->route('admin.products.edit', $product->id)->with('success', 'Produk berjaya dicipta! Anda boleh urus variation di sini.');
     }
 
     public function productEdit($id)
@@ -349,7 +369,7 @@ class AdminController extends Controller
         $this->checkAccess(['admin', 'storekeeper']);
 
         $request->validate([
-            'status' => 'required|in:pending,processing,completed,cancelled',
+            'status' => 'required|in:pending,paid,processing,completed,cancelled',
         ]);
 
         $order = Order::findOrFail($id);

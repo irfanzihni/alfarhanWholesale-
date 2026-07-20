@@ -98,68 +98,86 @@ class PaymentController extends Controller
     {
         $config      = config('payment.toyyibpay');
         $amountInSen = $this->toSen($order->final_amount);
+        $isSandbox   = (bool) $config['sandbox'];
 
         Log::info('ToyyibPay createBill attempt', [
             'order_id'   => $order->id,
             'amount_sen' => $amountInSen,
             'base_url'   => $config['base_url'],
-            'sandbox'    => $config['sandbox'],
+            'sandbox'    => $isSandbox,
         ]);
 
-        $response = Http::timeout(30)
-            ->asForm()
-            ->post("{$config['base_url']}/index.php/api/createBill", [
-                'userSecretKey'          => $config['secret_key'],
-                'categoryCode'           => $config['category_code'],
-                'billName'               => 'Order #' . $order->id,
-                'billDescription'        => 'Alfarhan Wholesale order payment',
-                'billPriceSetting'       => 1,   // fixed price
-                'billPayorInfo'          => 1,   // collect payer info
-                'billAmount'             => $amountInSen,
-                'billReturnUrl'          => route('checkout.payment.status', ['order_id' => $order->id]),
-                'billCallbackUrl'        => route('webhook.payment'),
-                'billExternalReferenceNo'=> (string) $order->id,
-                'billTo'                 => $order->customer_name ?? 'Customer',
-                'billEmail'              => $order->customer_email ?? 'noemail@example.com',
-                'billPhone'              => $order->customer_phone ?? '0123456789',
-                'billSplitPayment'       => 0,
-                'billSplitPaymentArgs'   => '',
-                'billPaymentChannel'     => 0,   // 0 = FPX + eWallet, 1 = FPX only, 2 = eWallet only
-                'billDisplayMerchant'    => 1,
-                'billContentEmail'       => 'Thank you for your order at Alfarhan Wholesale!',
+        // ── Sandbox simulation shortcut ─────────────────────────────────────
+        // Jika sandbox aktif, cuba sambung ke API. Kalau gagal (API tidak
+        // dapat dihubungi / credentials belum diluluskan), simulate terus
+        // supaya flow checkout boleh diuji sepenuhnya.
+        // ────────────────────────────────────────────────────────────────────
+        try {
+            $response = Http::timeout(15)
+                ->asForm()
+                ->post("{$config['base_url']}/index.php/api/createBill", [
+                    'userSecretKey'          => $config['secret_key'],
+                    'categoryCode'           => $config['category_code'],
+                    'billName'               => 'Order #' . $order->id,
+                    'billDescription'        => 'Alfarhan Wholesale order payment',
+                    'billPriceSetting'       => 1,
+                    'billPayorInfo'          => 1,
+                    'billAmount'             => $amountInSen,
+                    'billReturnUrl'          => route('checkout.payment.status', ['order_id' => $order->id]),
+                    'billCallbackUrl'        => route('webhook.payment'),
+                    'billExternalReferenceNo'=> (string) $order->id,
+                    'billTo'                 => $order->customer_name ?? 'Customer',
+                    'billEmail'              => $order->customer_email ?? 'noemail@example.com',
+                    'billPhone'              => $order->customer_phone ?? '0123456789',
+                    'billSplitPayment'       => 0,
+                    'billSplitPaymentArgs'   => '',
+                    'billPaymentChannel'     => 0,
+                    'billDisplayMerchant'    => 1,
+                    'billContentEmail'       => 'Thank you for your order at Alfarhan Wholesale!',
+                ]);
+
+            Log::info('ToyyibPay createBill response', [
+                'status' => $response->status(),
+                'body'   => $response->body(),
             ]);
 
-        Log::info('ToyyibPay createBill response', [
-            'status' => $response->status(),
-            'body'   => $response->body(),
-        ]);
+            if ($response->successful()) {
+                $payload  = $response->json();
+                $billCode = null;
+                if (is_array($payload)) {
+                    $billCode = $payload[0]['BillCode'] ?? $payload['BillCode'] ?? null;
+                }
 
-        if (! $response->successful()) {
-            Log::error('ToyyibPay createBill HTTP error', ['body' => $response->body()]);
-            return back()->with('error', 'Unable to connect to payment gateway. Please try again.');
+                if ($billCode) {
+                    $order->update(['payment_bill_code' => $billCode]);
+                    $paymentUrl = "{$config['base_url']}/{$billCode}";
+                    Log::info('Redirecting to ToyyibPay', ['url' => $paymentUrl]);
+                    return redirect()->away($paymentUrl);
+                }
+
+                Log::error('ToyyibPay createBill returned no BillCode', ['payload' => $payload]);
+            } else {
+                Log::warning('ToyyibPay createBill HTTP error', ['status' => $response->status(), 'body' => $response->body()]);
+            }
+
+        } catch (\Exception $e) {
+            Log::warning('ToyyibPay API unreachable: ' . $e->getMessage(), ['order_id' => $order->id]);
         }
 
-        $payload  = $response->json();
+        // ── Fallback: Simulasi pembayaran (SANDBOX ONLY) ─────────────────────
+        if ($isSandbox) {
+            Log::info('ToyyibPay sandbox: simulating successful payment', ['order_id' => $order->id]);
 
-        // ToyyibPay returns an array: [{"BillCode":"xxxx"}]
-        $billCode = null;
-        if (is_array($payload)) {
-            $billCode = $payload[0]['BillCode'] ?? $payload['BillCode'] ?? null;
+            // Mark order as paid with simulation reference
+            $this->markOrderAsPaid($order, 'SANDBOX-SIM-' . strtoupper(substr(md5($order->id . time()), 0, 8)));
+
+            return redirect()
+                ->route('checkout.success', $order->id)
+                ->with('success', '✅ Simulasi bayaran berjaya! (Mode Ujian — Tiada bayaran sebenar diproses)');
         }
 
-        if (! $billCode) {
-            Log::error('ToyyibPay createBill returned no BillCode', ['payload' => $payload]);
-            return back()->with('error', 'Invalid response from payment gateway. Please try again.');
-        }
-
-        // Save the bill code, this requires the migration to have run
-        $order->update(['payment_bill_code' => $billCode]);
-
-        $paymentUrl = "{$config['base_url']}/{$billCode}";
-
-        Log::info('Redirecting to ToyyibPay', ['url' => $paymentUrl]);
-
-        return redirect()->away($paymentUrl);
+        // ── Production: tunjuk error ─────────────────────────────────────────
+        return back()->with('error', 'Tidak dapat menghubungi gateway pembayaran. Sila cuba lagi atau pilih COD.');
     }
 
     private function handleToyyibPayWebhook(Request $request): Response

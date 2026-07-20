@@ -231,20 +231,20 @@ class EasyParcelService
         }
 
         // Base & incremental rates
-        // Note: If EasyParcel real API works, these only apply as a fallback.
         if ($isEastMalaysia) {
             // East Malaysia pricing
             $carriers = [
+                ['name' => 'Poslaju', 'base' => 15.00, 'inc' => 5.00, 'days' => '3-5 hari bekerja'],
                 ['name' => 'J&T Express', 'base' => 14.50, 'inc' => 4.50, 'days' => '2-4 hari bekerja'],
                 ['name' => 'Ninja Van', 'base' => 13.00, 'inc' => 4.80, 'days' => '3-6 hari bekerja'],
-                ['name' => 'Shopee Express', 'base' => 12.50, 'inc' => 4.20, 'days' => '2-5 hari bekerja'],
             ];
         } else {
             // West Malaysia pricing
             $carriers = [
                 ['name' => 'J&T Express', 'base' => 7.50, 'inc' => 1.80, 'days' => '1-2 hari bekerja'],
+                ['name' => 'Poslaju', 'base' => 8.00, 'inc' => 2.00, 'days' => '2-3 hari bekerja'],
                 ['name' => 'Ninja Van', 'base' => 7.00, 'inc' => 2.20, 'days' => '2-4 hari bekerja'],
-                ['name' => 'Shopee Express', 'base' => 7.20, 'inc' => 1.60, 'days' => '2-3 hari bekerja'],
+                ['name' => 'DHL eCommerce', 'base' => 8.50, 'inc' => 1.50, 'days' => '2-3 hari bekerja'],
             ];
         }
 

@@ -129,7 +129,7 @@
                 <div class="relative overflow-hidden bg-slate-100 aspect-square">
                     <img src="{{ asset($product->image_url) }}" alt="{{ $product->name }}" 
                          class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                         onerror="this.src='{{ asset('images/products/placeholder.jpg') }}'"
+                         onerror="this.src='{{ asset('images/products/placeholder.jpg') }}'">
 
                     
                     @if($product->discount_price)

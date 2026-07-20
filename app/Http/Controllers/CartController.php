@@ -223,7 +223,7 @@ class CartController extends Controller
 
         if (!$coupon->isValidForUser($user, $subtotal)) {
             if ($subtotal < $coupon->min_spend) {
-                return back()->with('error', 'Minimum spend of $' . number_format($coupon->min_spend, 2) . ' is required to use this coupon.');
+                return back()->with('error', 'Minimum pembelian sebanyak RM' . number_format($coupon->min_spend, 2) . ' diperlukan untuk menggunakan kupon ini.');
             }
             return back()->with('error', 'This coupon is not valid for you (perhaps you need to claim it first or you have already used it).');
         }
