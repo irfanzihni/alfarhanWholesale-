@@ -31,60 +31,47 @@
                         </thead>
                         <tbody class="divide-y divide-slate-100">
                             @foreach($cartItems as $item)
-                                <tr class="border-b border-slate-100">
-                                        <!-- Checkbox Pemilihan Barang -->
-                                        <td class="p-5 pl-6">
-                                            <input type="form-checkbox" name="selected_items[]" value="{{ $item->id }}" 
-                                                class="w-4 h-4 text-emerald-600 border-slate-300 rounded focus:ring-emerald-500 item-checkbox"
-                                                {{ $item->is_selected ? 'checked' : '' }}>
-                                        </td>
+                                <tr>
+                                    <td class="p-5 pl-6 flex items-center gap-4">
+                                        <div class="w-16 h-16 rounded-lg bg-slate-50 border border-slate-100 overflow-hidden shrink-0">
+                                            <img src="{{ asset($item->product->image_url) }}" alt="{{ $item->product->name }}" class="w-full h-full object-cover"
+                                                 onerror="this.src='{{ asset('images/products/placeholder.jpg') }}'">
 
-                                        <!-- Maklumat Produk & Gambar -->
-                                        <td class="p-5 flex items-center gap-4">
-                                            <div class="w-16 h-16 rounded-lg bg-slate-50 border border-slate-100 overflow-hidden shrink-0">
-                                                <img src="{{ asset($item->product->image_url) }}" alt="{{ $item->product->name }}" class="w-full h-full object-cover"
-                                                    onerror="this.src='{{ asset('images/products/placeholder.jpg') }}'">
-                                            </div>
-                                            <div>
-                                                <h4 class="font-bold text-slate-800 text-sm hover:text-emerald-700">
-                                                    <a href="{{ route('shop.show', $item->product_id) }}">{{ $item->product->name }}</a>
-                                                </h4>
-                                                @if($item->product_variation_id && $item->variation)
-                                                    <span class="inline-block bg-slate-100 text-slate-600 text-[10px] font-bold px-2 py-0.5 rounded-md mt-1">
-                                                        {{ $item->variation->name }}: {{ $item->variation->value }}
-                                                    </span>
-                                                @endif
-                                                <form action="{{ route('cart.remove', $item->id) }}" method="POST" class="mt-2">
-                                                    @csrf
-                                                    <button type="submit" class="text-xs text-red-500 hover:text-red-700 font-semibold transition-colors">
-                                                        Remove Item
-                                                    </button>
-                                                </form>
-                                            </div>
-                                        </td>
-
-                                        <!-- Kuantiti -->
-                                        <td class="p-5">
-                                            <form action="{{ route('cart.update', $item->id) }}" method="POST" class="flex items-center justify-center gap-1.5 max-w-[120px] mx-auto">
+                                        </div>
+                                        <div>
+                                            <h4 class="font-bold text-slate-800 text-sm hover:text-emerald-700">
+                                                <a href="{{ route('shop.show', $item->product_id) }}">{{ $item->product->name }}</a>
+                                            </h4>
+                                            @if($item->product_variation_id && $item->variation)
+                                                <span class="inline-block bg-slate-100 text-slate-600 text-[10px] font-bold px-2 py-0.5 rounded-md mt-1">
+                                                    {{ $item->variation->name }}: {{ $item->variation->value }}
+                                                </span>
+                                            @endif
+                                            <form action="{{ route('cart.remove', $item->id) }}" method="POST" class="mt-2">
                                                 @csrf
-                                                <input type="number" name="quantity" value="{{ $item->quantity }}" min="1" required
-                                                    class="w-16 px-2 py-1.5 border border-slate-200 rounded-lg text-center text-xs focus:outline-none focus:ring-2 focus:ring-emerald-600">
-                                                <button type="submit" class="bg-emerald-50 text-emerald-800 hover:bg-emerald-700 hover:text-white p-1.5 rounded-lg transition-all" title="Update Quantity">
-                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+                                                <button type="submit" class="text-xs text-red-500 hover:text-red-700 font-semibold transition-colors">
+                                                    Remove Item
                                                 </button>
                                             </form>
-                                        </td>
-
-                                        <!-- Harga Seunit -->
-                                        <td class="p-5 text-right font-medium text-slate-600 text-sm">
-                                            RM{{ number_format($item->unit_price, 2) }}
-                                        </td>
-
-                                        <!-- Subtotal -->
-                                        <td class="p-5 pr-6 text-right font-bold text-slate-800 text-sm">
-                                            RM{{ number_format($item->subtotal, 2) }}
-                                        </td>
-                                    </tr>
+                                        </div>
+                                    </td>
+                                    <td class="p-5">
+                                        <form action="{{ route('cart.update', $item->id) }}" method="POST" class="flex items-center justify-center gap-1.5 max-w-[120px] mx-auto">
+                                            @csrf
+                                            <input type="number" name="quantity" value="{{ $item->quantity }}" min="1" required
+                                                   class="w-16 px-2 py-1.5 border border-slate-200 rounded-lg text-center text-xs focus:outline-none focus:ring-2 focus:ring-emerald-600">
+                                            <button type="submit" class="bg-emerald-50 text-emerald-800 hover:bg-emerald-700 hover:text-white p-1.5 rounded-lg transition-all" title="Update Quantity">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+                                            </button>
+                                        </form>
+                                    </td>
+                                    <td class="p-5 text-right font-medium text-slate-600 text-sm">
+                                        RM{{ number_format($item->unit_price, 2) }}
+                                    </td>
+                                    <td class="p-5 pr-6 text-right font-bold text-slate-800 text-sm">
+                                        RM{{ number_format($item->subtotal, 2) }}
+                                    </td>
+                                </tr>
                             @endforeach
                         </tbody>
                     </table>
