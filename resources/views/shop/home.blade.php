@@ -126,7 +126,7 @@
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-8">
         @foreach($featuredProducts as $product)
             <div class="bg-white border border-emerald-100 rounded-xl sm:rounded-2xl shadow-xs overflow-hidden hover:shadow-lg transition-all flex flex-col group min-w-0">
-                <div class="relative overflow-hidden bg-slate-100 aspect-[4/3]">
+                <div class="relative overflow-hidden bg-slate-100 aspect-[16/9]">
                     <img src="{{ asset($product->image_url) }}" alt="{{ $product->name }}" 
                          class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                          onerror="this.src='{{ asset('images/products/placeholder.jpg') }}'">
