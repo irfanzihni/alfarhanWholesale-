@@ -313,36 +313,16 @@
         const hamburgerIcon = document.getElementById('hamburger-icon');
         const closeIcon = document.getElementById('close-icon');
 
-        btn.addEventListener('click', () => {
-            menu.classList.toggle('open');
-            hamburgerIcon.classList.toggle('hidden');
-            closeIcon.classList.toggle('hidden');
-            
-        });
-
-        document.querySelectorAll('.item-checkbox').forEach(checkbox => {
-        checkbox.addEventListener('change', function() {
-            let itemId = this.value;
-            let isSelected = this.checked ? 1 : 0;
-
-            fetch(`/cart/update-selection/${itemId}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
-                body: JSON.stringify({ is_selected: isSelected })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if(data.success) {
-                    // Anda boleh kemas kini jumlah harga (Total) di sini jika perlu
-                    location.reload(); // Atau reload halaman untuk paparkan total baru
-                }
+        if (btn) {
+            btn.addEventListener('click', () => {
+                menu.classList.toggle('open');
+                hamburgerIcon.classList.toggle('hidden');
+                closeIcon.classList.toggle('hidden');
             });
-        });
-        });
+        }
     </script>
+
+    @yield('scripts')
 
 </body>
 </html>

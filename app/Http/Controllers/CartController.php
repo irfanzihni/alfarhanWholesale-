@@ -26,7 +26,9 @@ class CartController extends Controller
 
         $subtotal = 0;
         foreach ($cartItems as $item) {
-            $subtotal += $item->subtotal;
+            if ($item->is_selected) {
+                $subtotal += $item->subtotal;
+            }
         }
 
         // Fetch available coupons the user can claim
@@ -165,6 +167,50 @@ class CartController extends Controller
         return redirect()->route('shop.cart')->with('success', 'Item removed from cart.');
     }
 
+    // Update item selection state (is_selected)
+    public function updateSelection(Request $request)
+    {
+        $user = Auth::user();
+        $checkedIds = $request->checked_ids ?? [];
+
+        // Mark items as selected or unselected
+        CartItem::where('user_id', $user->id)->update(['is_selected' => false]);
+        if (!empty($checkedIds)) {
+            CartItem::where('user_id', $user->id)
+                ->whereIn('id', $checkedIds)
+                ->update(['is_selected' => true]);
+        }
+
+        $cartItems = CartItem::where('user_id', $user->id)->get();
+        $subtotal = 0;
+        foreach ($cartItems as $item) {
+            if ($item->is_selected) {
+                $subtotal += $item->subtotal;
+            }
+        }
+
+        $discount = 0.00;
+        $couponCode = session('applied_coupon_code');
+        if ($couponCode) {
+            $coupon = Coupon::where('code', $couponCode)->first();
+            if ($coupon && $coupon->isValidForUser($user, $subtotal)) {
+                $discount = $coupon->calculateDiscount($subtotal);
+            } else {
+                session()->forget('applied_coupon_code');
+            }
+        }
+
+        $total = max(0.00, $subtotal - $discount);
+
+        return response()->json([
+            'success' => true,
+            'subtotal' => number_format($subtotal, 2),
+            'discount' => number_format($discount, 2),
+            'total' => number_format($total, 2),
+            'coupon_removed' => $couponCode && !session('applied_coupon_code'),
+        ]);
+    }
+
     // Claim Coupon
     public function claimCoupon(Request $request)
     {
@@ -214,11 +260,13 @@ class CartController extends Controller
             return back()->with('error', 'Invalid or expired coupon code.');
         }
 
-        // Calculate current subtotal
+        // Calculate current subtotal from selected items only
         $cartItems = CartItem::where('user_id', $user->id)->get();
         $subtotal = 0;
         foreach ($cartItems as $item) {
-            $subtotal += $item->subtotal;
+            if ($item->is_selected) {
+                $subtotal += $item->subtotal;
+            }
         }
 
         if (!$coupon->isValidForUser($user, $subtotal)) {

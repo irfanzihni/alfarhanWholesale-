@@ -23,7 +23,9 @@
                     <table class="hidden md:table w-full text-left border-collapse">
                         <thead>
                             <tr class="bg-emerald-50/60 border-b border-emerald-100 text-slate-600 font-bold text-xs uppercase tracking-wider">
-                                <th class="p-5 pl-6"></th>
+                                <th class="p-5 pl-6">
+                                    <input type="checkbox" id="select-all" class="w-4 h-4 text-emerald-600 border-slate-300 rounded focus:ring-emerald-500">
+                                </th>
                                 <th class="p-5 pl-6">Product Details</th>
                                 <th class="p-5 text-center">Quantity</th>
                                 <th class="p-5 text-right">Price</th>
@@ -94,6 +96,9 @@
                     <div class="md:hidden divide-y divide-slate-100">
                         @foreach($cartItems as $item)
                             <div class="p-4 flex gap-4 items-start">
+                                <input type="checkbox" name="selected_items[]" value="{{ $item->id }}"
+                                    class="w-4 h-4 text-emerald-600 border-slate-300 rounded focus:ring-emerald-500 item-checkbox mt-2 shrink-0"
+                                    {{ $item->is_selected ? 'checked' : '' }}>
                                 <div class="w-20 h-20 rounded-xl bg-slate-50 border border-slate-100 overflow-hidden shrink-0">
                                     <img src="{{ asset($item->product->image_url) }}" alt="{{ $item->product->name }}" class="w-full h-full object-cover"
                                          onerror="this.src='{{ asset('images/products/placeholder.jpg') }}'">
@@ -218,25 +223,25 @@
                     <div class="space-y-3 text-sm font-medium">
                         <div class="flex justify-between text-slate-600">
                             <span>Subtotal</span>
-                            <span class="text-slate-800 font-bold">RM{{ number_format($subtotal, 2) }}</span>
+                            <span class="text-slate-800 font-bold" id="summary-subtotal">RM{{ number_format($subtotal, 2) }}</span>
                         </div>
 
-                        @if($appliedCoupon)
+                        <div id="coupon-row" class="{{ $appliedCoupon ? '' : 'hidden' }}">
                             <div class="flex justify-between items-center bg-emerald-50 text-emerald-800 p-2.5 rounded-lg text-xs">
                                 <div>
-                                    <span class="font-bold">Coupon: {{ $appliedCoupon->code }}</span>
+                                    <span class="font-bold" id="summary-coupon-code">{{ $appliedCoupon ? $appliedCoupon->code : '' }}</span>
                                     <p class="text-[10px] text-emerald-600">Applied successfully</p>
                                 </div>
                                 <div class="flex items-center gap-2">
-                                    <span class="font-extrabold">-RM{{ number_format($discount, 2) }}</span>
+                                    <span class="font-extrabold" id="summary-discount">-RM{{ number_format($discount, 2) }}</span>
                                     <a href="{{ route('coupon.remove') }}" class="text-red-500 hover:text-red-700 font-bold text-sm" title="Remove Coupon">&times;</a>
                                 </div>
                             </div>
-                        @endif
+                        </div>
 
                         <div class="border-t border-slate-100 pt-4 flex justify-between text-base font-extrabold text-slate-900">
                             <span>Order Total</span>
-                            <span class="text-emerald-800">RM{{ number_format($total, 2) }}</span>
+                            <span class="text-emerald-800" id="summary-total">RM{{ number_format($total, 2) }}</span>
                         </div>
                     </div>
 
@@ -256,19 +261,69 @@
 
 @section('scripts')
 <script>
+    // Select All toggle
+    document.getElementById('select-all')?.addEventListener('change', function() {
+        document.querySelectorAll('.item-checkbox').forEach(cb => {
+            cb.checked = this.checked;
+        });
+        updateServerSelection();
+    });
+
+    // When individual checkbox changes
+    document.querySelectorAll('.item-checkbox').forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            updateServerSelection();
+        });
+    });
+
+    // Send selection state to server and refresh summary
+    function updateServerSelection() {
+        const checkedIds = [];
+        document.querySelectorAll('.item-checkbox:checked').forEach(cb => {
+            checkedIds.push(cb.value);
+        });
+
+        fetch(`/cart/update-selection`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({ checked_ids: checkedIds })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById('summary-subtotal').textContent = 'RM' + data.subtotal;
+
+                const discountEl = document.getElementById('summary-discount');
+                const couponRow = document.getElementById('coupon-row');
+                if (parseFloat(data.discount) > 0) {
+                    if (discountEl) discountEl.textContent = '-RM' + data.discount;
+                    if (couponRow) couponRow.classList.remove('hidden');
+                } else {
+                    if (couponRow) couponRow.classList.add('hidden');
+                }
+
+                document.getElementById('summary-total').textContent = 'RM' + data.total;
+            }
+        })
+        .catch(() => {});
+    }
+
     function proceedToCheckout() {
         const checkboxes = document.querySelectorAll('input[name="selected_items[]"]:checked');
         if (checkboxes.length === 0) {
             alert('Please select at least one item to checkout.');
             return;
         }
-        
+
         let url = "{{ route('checkout.index') }}?";
         const params = new URLSearchParams();
         checkboxes.forEach(cb => {
             params.append('selected_items[]', cb.value);
         });
-        
+
         window.location.href = url + params.toString();
     }
 </script>
