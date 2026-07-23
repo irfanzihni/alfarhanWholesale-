@@ -25,9 +25,11 @@ class CartController extends Controller
             ->get();
 
         $subtotal = 0;
+        $totalWeight = 0;
         foreach ($cartItems as $item) {
             if ($item->is_selected) {
                 $subtotal += $item->subtotal;
+                $totalWeight += ($item->product->weight ?? 0.50) * $item->quantity;
             }
         }
 
@@ -60,7 +62,7 @@ class CartController extends Controller
 
         $total = max(0.00, $subtotal - $discount);
 
-        return view('shop.cart', compact('cartItems', 'subtotal', 'discount', 'total', 'allCoupons', 'claimedCouponIds', 'usedCouponIds', 'appliedCoupon'));
+        return view('shop.cart', compact('cartItems', 'subtotal', 'totalWeight', 'discount', 'total', 'allCoupons', 'claimedCouponIds', 'usedCouponIds', 'appliedCoupon'));
     }
 
     // Add Item to Cart
@@ -181,11 +183,13 @@ class CartController extends Controller
                 ->update(['is_selected' => true]);
         }
 
-        $cartItems = CartItem::where('user_id', $user->id)->get();
+        $cartItems = CartItem::with('product')->where('user_id', $user->id)->get();
         $subtotal = 0;
+        $totalWeight = 0;
         foreach ($cartItems as $item) {
             if ($item->is_selected) {
                 $subtotal += $item->subtotal;
+                $totalWeight += ($item->product->weight ?? 0.50) * $item->quantity;
             }
         }
 
@@ -205,6 +209,8 @@ class CartController extends Controller
         return response()->json([
             'success' => true,
             'subtotal' => number_format($subtotal, 2),
+            'total_weight' => (float)$totalWeight,
+            'total_weight_formatted' => number_format($totalWeight, 2) . ' kg',
             'discount' => number_format($discount, 2),
             'total' => number_format($total, 2),
             'coupon_removed' => $couponCode && !session('applied_coupon_code'),

@@ -35,6 +35,8 @@ class CheckoutController extends Controller
             $selectedItems = session('checkout_items', []);
             if (!empty($selectedItems)) {
                 $query->whereIn('id', $selectedItems);
+            } else {
+                $query->where('is_selected', true);
             }
         }
 

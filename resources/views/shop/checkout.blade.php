@@ -212,6 +212,11 @@
                         <span class="text-slate-800 font-bold">RM{{ number_format($subtotal, 2) }}</span>
                     </div>
 
+                    <div class="flex justify-between text-slate-600">
+                        <span>Jumlah Berat (Total Weight)</span>
+                        <span class="text-slate-800 font-bold" id="checkout-total-weight">{{ number_format($totalWeight, 2) }} kg</span>
+                    </div>
+
                     @if($couponCode)
                         <div class="flex justify-between text-emerald-800 bg-emerald-50 px-2.5 py-1.5 rounded-lg text-xs">
                             <span class="font-semibold">Applied Coupon ({{ $couponCode }})</span>

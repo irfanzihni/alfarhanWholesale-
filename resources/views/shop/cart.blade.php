@@ -25,7 +25,7 @@
                             <tr class="bg-emerald-50/60 border-b border-emerald-100 text-slate-600 font-bold text-xs uppercase tracking-wider">
                                 <th class="p-5 pl-6">
                                     <input type="checkbox" id="select-all-checkbox" 
-                                        class="w-4 h-4 text-emerald-600 border-slate-300 rounded focus:ring-emerald-500">
+                                        class="w-4 h-4 text-emerald-600 border-slate-300 rounded focus:ring-emerald-500 cursor-pointer">
                                 </th>
                                 <th class="p-5 pl-6">Product Details</th>
                                 <th class="p-5 text-center">Quantity</th>
@@ -39,8 +39,11 @@
                                         <!-- Checkbox Pemilihan Barang -->
                                         <td class="p-5 pl-6">
                                             <input type="checkbox" name="selected_items[]" value="{{ $item->id }}" 
-                                                class="w-4 h-4 text-emerald-600 border-slate-300 rounded focus:ring-emerald-500 item-checkbox"
-                                                data-price="{{ $item->subtotal }}">
+                                                class="w-4 h-4 text-emerald-600 border-slate-300 rounded focus:ring-emerald-500 item-checkbox cursor-pointer"
+                                                data-item-id="{{ $item->id }}"
+                                                data-price="{{ $item->subtotal }}"
+                                                data-weight="{{ ($item->product->weight ?? 0.50) * $item->quantity }}"
+                                                {{ $item->is_selected ? 'checked' : '' }}>
                                         </td>
 
                                         <!-- Maklumat Produk & Gambar -->
@@ -95,11 +98,21 @@
 
                     {{-- Mobile Cards --}}
                     <div class="md:hidden divide-y divide-slate-100">
+                        <div class="bg-emerald-50/60 border-b border-emerald-100 p-4 flex items-center justify-between font-bold text-xs text-slate-600 uppercase tracking-wider">
+                            <div class="flex items-center gap-2">
+                                <input type="checkbox" id="select-all-checkbox-mobile" 
+                                    class="w-4 h-4 text-emerald-600 border-slate-300 rounded focus:ring-emerald-500 cursor-pointer">
+                                <span>Select All Items</span>
+                            </div>
+                        </div>
                         @foreach($cartItems as $item)
                             <div class="p-4 flex gap-4 items-start">
                                 <input type="checkbox" name="selected_items[]" value="{{ $item->id }}" 
-                                    class="w-4 h-4 text-emerald-600 border-slate-300 rounded focus:ring-emerald-500 item-checkbox mt-2"
-                                    data-price="{{ $item->subtotal }}">
+                                    class="w-4 h-4 text-emerald-600 border-slate-300 rounded focus:ring-emerald-500 item-checkbox mt-2 cursor-pointer"
+                                    data-item-id="{{ $item->id }}"
+                                    data-price="{{ $item->subtotal }}"
+                                    data-weight="{{ ($item->product->weight ?? 0.50) * $item->quantity }}"
+                                    {{ $item->is_selected ? 'checked' : '' }}>
                                 <div class="w-20 h-20 rounded-xl bg-slate-50 border border-slate-100 overflow-hidden shrink-0">
                                     <img src="{{ asset($item->product->image_url) }}" alt="{{ $item->product->name }}" class="w-full h-full object-cover"
                                          onerror="this.src='{{ asset('images/products/placeholder.jpg') }}'">
@@ -227,6 +240,11 @@
                             <span class="text-slate-800 font-bold" id="summary-subtotal">RM{{ number_format($subtotal, 2) }}</span>
                         </div>
 
+                        <div class="flex justify-between text-slate-600">
+                            <span>Total Weight</span>
+                            <span class="text-slate-800 font-bold" id="summary-weight">{{ number_format($totalWeight, 2) }} kg</span>
+                        </div>
+
                         <div id="coupon-row" class="{{ $appliedCoupon ? '' : 'hidden' }}">
                             <div class="flex justify-between items-center bg-emerald-50 text-emerald-800 p-2.5 rounded-lg text-xs">
                                 <div>
@@ -262,27 +280,87 @@
 
 @section('scripts')
 <script>
-    // Select All toggle
-    document.getElementById('select-all')?.addEventListener('change', function() {
-        document.querySelectorAll('.item-checkbox').forEach(cb => {
-            cb.checked = this.checked;
-        });
-        updateServerSelection();
-    });
+    document.addEventListener('DOMContentLoaded', function () {
+        const masterDesktop = document.getElementById('select-all-checkbox');
+        const masterMobile  = document.getElementById('select-all-checkbox-mobile');
 
-    // When individual checkbox changes
-    document.querySelectorAll('.item-checkbox').forEach(checkbox => {
-        checkbox.addEventListener('change', function() {
+        // Toggle all item checkboxes when master checkbox is toggled
+        function handleMasterToggle(isMasterChecked) {
+            document.querySelectorAll('.item-checkbox').forEach(cb => {
+                cb.checked = isMasterChecked;
+            });
+            updateMasterCheckboxState();
             updateServerSelection();
+        }
+
+        if (masterDesktop) {
+            masterDesktop.addEventListener('change', function () {
+                handleMasterToggle(this.checked);
+            });
+        }
+
+        if (masterMobile) {
+            masterMobile.addEventListener('change', function () {
+                handleMasterToggle(this.checked);
+            });
+        }
+
+        // When individual checkbox changes
+        document.querySelectorAll('.item-checkbox').forEach(checkbox => {
+            checkbox.addEventListener('change', function () {
+                const itemId = this.dataset.itemId || this.value;
+                const isChecked = this.checked;
+                
+                // Sync desktop & mobile inputs for same item ID if both exist
+                document.querySelectorAll(`.item-checkbox[data-item-id="${itemId}"], .item-checkbox[value="${itemId}"]`).forEach(cb => {
+                    cb.checked = isChecked;
+                });
+
+                updateMasterCheckboxState();
+                updateServerSelection();
+            });
         });
+
+        // Calculate and update master checkbox state (checked, indeterminate, unchecked)
+        function updateMasterCheckboxState() {
+            const allItemIds = new Set();
+            const checkedItemIds = new Set();
+
+            document.querySelectorAll('.item-checkbox').forEach(cb => {
+                const id = cb.dataset.itemId || cb.value;
+                allItemIds.add(id);
+                if (cb.checked) {
+                    checkedItemIds.add(id);
+                }
+            });
+
+            const totalCount = allItemIds.size;
+            const checkedCount = checkedItemIds.size;
+
+            [masterDesktop, masterMobile].forEach(master => {
+                if (!master) return;
+                if (totalCount > 0 && checkedCount === totalCount) {
+                    master.checked = true;
+                    master.indeterminate = false;
+                } else if (checkedCount > 0 && checkedCount < totalCount) {
+                    master.checked = false;
+                    master.indeterminate = true;
+                } else {
+                    master.checked = false;
+                    master.indeterminate = false;
+                }
+            });
+        }
+
+        // Run initial state calculation on load
+        updateMasterCheckboxState();
     });
 
     // Send selection state to server and refresh summary
     function updateServerSelection() {
-        const checkedIds = [];
-        document.querySelectorAll('.item-checkbox:checked').forEach(cb => {
-            checkedIds.push(cb.value);
-        });
+        const checkedIds = Array.from(new Set(
+            Array.from(document.querySelectorAll('.item-checkbox:checked')).map(cb => cb.value)
+        ));
 
         fetch(`/cart/update-selection`, {
             method: 'POST',
@@ -295,7 +373,11 @@
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                document.getElementById('summary-subtotal').textContent = 'RM' + data.subtotal;
+                const subtotalEl = document.getElementById('summary-subtotal');
+                if (subtotalEl) subtotalEl.textContent = 'RM' + data.subtotal;
+
+                const weightEl = document.getElementById('summary-weight');
+                if (weightEl) weightEl.textContent = data.total_weight_formatted || (data.total_weight + ' kg');
 
                 const discountEl = document.getElementById('summary-discount');
                 const couponRow = document.getElementById('coupon-row');
@@ -306,7 +388,8 @@
                     if (couponRow) couponRow.classList.add('hidden');
                 }
 
-                document.getElementById('summary-total').textContent = 'RM' + data.total;
+                const totalEl = document.getElementById('summary-total');
+                if (totalEl) totalEl.textContent = 'RM' + data.total;
             }
         })
         .catch(() => {});
@@ -321,8 +404,12 @@
 
         let url = "{{ route('checkout.index') }}?";
         const params = new URLSearchParams();
+        const checkedIds = new Set();
         checkedCheckboxes.forEach(cb => {
-            params.append('selected_items[]', cb.value);
+            if (!checkedIds.has(cb.value)) {
+                checkedIds.add(cb.value);
+                params.append('selected_items[]', cb.value);
+            }
         });
 
         window.location.href = url + params.toString();
