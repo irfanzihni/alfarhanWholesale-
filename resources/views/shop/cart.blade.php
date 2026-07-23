@@ -24,7 +24,8 @@
                         <thead>
                             <tr class="bg-emerald-50/60 border-b border-emerald-100 text-slate-600 font-bold text-xs uppercase tracking-wider">
                                 <th class="p-5 pl-6">
-                                    <input type="checkbox" id="select-all" class="w-4 h-4 text-emerald-600 border-slate-300 rounded focus:ring-emerald-500">
+                                    <input type="checkbox" id="select-all-checkbox" 
+                                        class="w-4 h-4 text-emerald-600 border-slate-300 rounded focus:ring-emerald-500">
                                 </th>
                                 <th class="p-5 pl-6">Product Details</th>
                                 <th class="p-5 text-center">Quantity</th>
@@ -39,7 +40,7 @@
                                         <td class="p-5 pl-6">
                                             <input type="checkbox" name="selected_items[]" value="{{ $item->id }}" 
                                                 class="w-4 h-4 text-emerald-600 border-slate-300 rounded focus:ring-emerald-500 item-checkbox"
-                                                {{ $item->is_selected ? 'checked' : '' }}>
+                                                data-price="{{ $item->subtotal }}">
                                         </td>
 
                                         <!-- Maklumat Produk & Gambar -->
@@ -73,7 +74,7 @@
                                                 <input type="number" name="quantity" value="{{ $item->quantity }}" min="1" required
                                                     class="w-16 px-2 py-1.5 border border-slate-200 rounded-lg text-center text-xs focus:outline-none focus:ring-2 focus:ring-emerald-600">
                                                 <button type="submit" class="bg-emerald-50 text-emerald-800 hover:bg-emerald-700 hover:text-white p-1.5 rounded-lg transition-all" title="Update Quantity">
-                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
                                                 </button>
                                             </form>
                                         </td>
@@ -96,9 +97,15 @@
                     <div class="md:hidden divide-y divide-slate-100">
                         @foreach($cartItems as $item)
                             <div class="p-4 flex gap-4 items-start">
+<<<<<<< HEAD
                                 <input type="checkbox" name="selected_items[]" value="{{ $item->id }}"
                                     class="w-4 h-4 text-emerald-600 border-slate-300 rounded focus:ring-emerald-500 item-checkbox mt-2 shrink-0"
                                     {{ $item->is_selected ? 'checked' : '' }}>
+=======
+                                <input type="checkbox" name="selected_items[]" value="{{ $item->id }}" 
+                                    class="w-4 h-4 text-emerald-600 border-slate-300 rounded focus:ring-emerald-500 item-checkbox mt-2"
+                                    data-price="{{ $item->subtotal }}">
+>>>>>>> 2e25e5d0ab42ab8b070900e5cb48613186b013c0
                                 <div class="w-20 h-20 rounded-xl bg-slate-50 border border-slate-100 overflow-hidden shrink-0">
                                     <img src="{{ asset($item->product->image_url) }}" alt="{{ $item->product->name }}" class="w-full h-full object-cover"
                                          onerror="this.src='{{ asset('images/products/placeholder.jpg') }}'">
@@ -125,7 +132,7 @@
                                             <input type="number" name="quantity" value="{{ $item->quantity }}" min="1" required
                                                    class="w-14 px-2 py-2 border border-slate-200 rounded-lg text-center text-xs focus:outline-none focus:ring-2 focus:ring-emerald-600">
                                             <button type="submit" class="bg-emerald-50 text-emerald-800 hover:bg-emerald-700 hover:text-white p-2 rounded-lg transition-all">
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
                                             </button>
                                         </form>
                                         <form action="{{ route('cart.remove', $item->id) }}" method="POST">
@@ -222,8 +229,13 @@
                     
                     <div class="space-y-3 text-sm font-medium">
                         <div class="flex justify-between text-slate-600">
+<<<<<<< HEAD
                             <span>Subtotal</span>
                             <span class="text-slate-800 font-bold" id="summary-subtotal">RM{{ number_format($subtotal, 2) }}</span>
+=======
+                            <span>Subtotal (Selected)</span>
+                            <span class="text-slate-800 font-bold" id="selected-subtotal">RM0.00</span>
+>>>>>>> 2e25e5d0ab42ab8b070900e5cb48613186b013c0
                         </div>
 
                         <div id="coupon-row" class="{{ $appliedCoupon ? '' : 'hidden' }}">
@@ -241,7 +253,11 @@
 
                         <div class="border-t border-slate-100 pt-4 flex justify-between text-base font-extrabold text-slate-900">
                             <span>Order Total</span>
+<<<<<<< HEAD
                             <span class="text-emerald-800" id="summary-total">RM{{ number_format($total, 2) }}</span>
+=======
+                            <span class="text-emerald-800" id="selected-total">RM0.00</span>
+>>>>>>> 2e25e5d0ab42ab8b070900e5cb48613186b013c0
                         </div>
                     </div>
 
@@ -261,6 +277,7 @@
 
 @section('scripts')
 <script>
+<<<<<<< HEAD
     // Select All toggle
     document.getElementById('select-all')?.addEventListener('change', function() {
         document.querySelectorAll('.item-checkbox').forEach(cb => {
@@ -311,20 +328,67 @@
         .catch(() => {});
     }
 
+=======
+    const checkboxes = document.querySelectorAll('.item-checkbox');
+    const selectAllCheckbox = document.getElementById('select-all-checkbox');
+    const subtotalElement = document.getElementById('selected-subtotal');
+    const totalElement = document.getElementById('selected-total');
+    const discountAmount = {{ $discount }};
+
+    // Update summary when checkbox changes
+    function updateOrderSummary() {
+        let selectedTotal = 0;
+        checkboxes.forEach(cb => {
+            if (cb.checked) {
+                selectedTotal += parseFloat(cb.dataset.price) || 0;
+            }
+        });
+
+        const orderTotal = Math.max(0, selectedTotal - discountAmount);
+        subtotalElement.textContent = 'RM' + selectedTotal.toFixed(2);
+        totalElement.textContent = 'RM' + orderTotal.toFixed(2);
+    }
+
+    // Select/Deselect all checkboxes
+    selectAllCheckbox?.addEventListener('change', function() {
+        checkboxes.forEach(cb => {
+            cb.checked = this.checked;
+        });
+        updateOrderSummary();
+    });
+
+    // Update summary when individual checkbox changes
+    checkboxes.forEach(cb => {
+        cb.addEventListener('change', updateOrderSummary);
+    });
+
+    // Initialize on page load
+    updateOrderSummary();
+
+>>>>>>> 2e25e5d0ab42ab8b070900e5cb48613186b013c0
     function proceedToCheckout() {
-        const checkboxes = document.querySelectorAll('input[name="selected_items[]"]:checked');
-        if (checkboxes.length === 0) {
+        const checkedCheckboxes = document.querySelectorAll('input[name="selected_items[]"]:checked');
+        if (checkedCheckboxes.length === 0) {
             alert('Please select at least one item to checkout.');
             return;
         }
+<<<<<<< HEAD
 
         let url = "{{ route('checkout.index') }}?";
+=======
+        
+>>>>>>> 2e25e5d0ab42ab8b070900e5cb48613186b013c0
         const params = new URLSearchParams();
-        checkboxes.forEach(cb => {
+        checkedCheckboxes.forEach(cb => {
             params.append('selected_items[]', cb.value);
         });
+<<<<<<< HEAD
 
         window.location.href = url + params.toString();
+=======
+        
+        window.location.href = "{{ route('checkout.index') }}?" + params.toString();
+>>>>>>> 2e25e5d0ab42ab8b070900e5cb48613186b013c0
     }
 </script>
 @endsection

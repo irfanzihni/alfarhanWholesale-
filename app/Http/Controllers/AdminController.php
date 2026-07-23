@@ -265,6 +265,7 @@ class AdminController extends Controller
 
     // ----------------------------------------------------
     // ADMIN ONLY: CATEGORY MANAGEMENT (CRUD)
+    // RESTORED: Category functions are still needed by dashboard
     // ----------------------------------------------------
     
     public function categoryStore(Request $request)
@@ -293,83 +294,8 @@ class AdminController extends Controller
     }
 
     // ----------------------------------------------------
-    // OUTDOOR SALES AGENT: OFF-LINE ORDER LOGGING
-    // ----------------------------------------------------
-
-    public function logOutdoorSale(Request $request)
-    {
-        $this->checkAccess(['admin', 'outdoor_sales']);
-
-        $request->validate([
-            'product_id' => 'required|exists:products,id',
-            'product_variation_id' => 'nullable|exists:product_variations,id',
-            'quantity' => 'required|integer|min:1',
-            'customer_name' => 'required|string|max:255',
-            'customer_phone' => 'nullable|string|max:20',
-            'delivery_address' => 'nullable|string',
-        ]);
-
-        $product = Product::findOrFail($request->product_id);
-        $variation = null;
-        $unitPrice = $product->active_price;
-
-        if ($request->product_variation_id) {
-            $variation = ProductVariation::findOrFail($request->product_variation_id);
-            $unitPrice = $variation->active_price;
-
-            if ($variation->stock < $request->quantity) {
-                return back()->with('error', 'Insufficient stock! Only ' . $variation->stock . ' units available for ' . $product->name . ' (' . $variation->value . ').');
-            }
-        } else {
-            if ($product->stock < $request->quantity) {
-                return back()->with('error', 'Insufficient stock! Only ' . $product->stock . ' units available.');
-            }
-        }
-
-        $totalAmount = $unitPrice * $request->quantity;
-
-        DB::beginTransaction();
-        try {
-            $order = Order::create([
-                'user_id' => null,
-                'order_type' => 'outdoor',
-                'customer_name' => $request->customer_name,
-                'customer_phone' => $request->customer_phone,
-                'delivery_address' => $request->delivery_address ?: 'Outdoor Sales Event',
-                'total_amount' => $totalAmount,
-                'discount_amount' => 0,
-                'final_amount' => $totalAmount,
-                'status' => 'completed', // Outdoor sales are completed immediately
-                'created_by' => Auth::id(),
-            ]);
-
-            OrderItem::create([
-                'order_id' => $order->id,
-                'product_id' => $product->id,
-                'product_variation_id' => $request->product_variation_id,
-                'price' => $unitPrice,
-                'quantity' => $request->quantity,
-            ]);
-
-            // Deduct stock
-            if ($variation) {
-                $variation->stock -= $request->quantity;
-                $variation->save();
-            } else {
-                $product->stock -= $request->quantity;
-                $product->save();
-            }
-
-            DB::commit();
-            return back()->with('success', 'Outdoor sale logged successfully!');
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return back()->with('error', 'Error logging outdoor sale: ' . $e->getMessage());
-        }
-    }
-
-    // ----------------------------------------------------
     // PURCHASER: INVENTORY MONITOR & RESTOCKING
+    // NOTE: Restock Product is the main inventory function
     // ----------------------------------------------------
 
     public function inventoryList()
@@ -470,7 +396,7 @@ class AdminController extends Controller
 
     public function reports(Request $request)
     {
-        $this->checkAccess(['admin', 'outdoor_sales']); // Let outdoor sales view reports if needed, or only admin.
+        $this->checkAccess(['admin', 'outdoor_sales']);
 
         // Sales by type
         $onlineRevenue = Order::where('order_type', 'online')->where('status', '!=', 'cancelled')->sum('final_amount');
