@@ -37,7 +37,7 @@
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Category -->
+                <!-- Category Dropdown (Fixed) -->
                 <div>
                     <label for="category" class="block text-xs font-bold text-slate-600 mb-1.5 uppercase">Kategori</label>
                     @php
@@ -47,14 +47,15 @@
                             $catName = $matchingCat->name;
                         }
                     @endphp
-                    <input type="text" name="category" id="category" list="category-list" required value="{{ $catName }}"
-                           class="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-transparent transition-all"
-                           placeholder="Pilih atau Taip Kategori Baru...">
-                    <datalist id="category-list">
+                    <select name="category" id="category" required
+                            class="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-transparent transition-all">
+                        <option value="">-- Pilih Kategori --</option>
                         @foreach($categories as $cat)
-                            <option value="{{ $cat->name }}"></option>
+                            <option value="{{ $cat->name }}" {{ $catName == $cat->name ? 'selected' : '' }}>
+                                {{ $cat->name }}
+                            </option>
                         @endforeach
-                    </datalist>
+                    </select>
                 </div>
 
                 <!-- Stock -->
@@ -63,7 +64,7 @@
                     <input type="number" name="stock" id="stock" value="{{ old('stock', $product->stock) }}" min="0" required
                            class="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-transparent transition-all">
                     @if($product->variations->isNotEmpty())
-                        <span class="text-[10px] text-amber-700 font-bold mt-1 block">⚠️ Stock is currently managed via variations (total: {{ $product->variations->sum('stock') }} units). Base stock will be ignored unless variations are deleted.</span>
+                        <span class="text-[10px] text-amber-700 font-bold mt-1 block">⚠️ Stock is currently managed via variations (total: {{ $product->variations->sum('stock') }} units). Base stock akan diabaikan.</span>
                     @endif
                 </div>
             </div>
@@ -138,7 +139,7 @@
                                 @endif
                             </td>
                             <td class="p-4 text-center">
-                                <span class="inline-block px-2.5 py-0.5 rounded-full font-bold {{ $var->stock <= 0 ? 'bg-red-100 text-red-800' : ($var->stock < 10 ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-800') }}">
+                                <span class="inline-block px-2.5 py-0.5 rounded-full font-bold {{ $var->stock <= 0 ? 'bg-red-100 text-red-800' : ($var->stock < 10 ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800') }}">
                                     {{ $var->stock }} units
                                 </span>
                             </td>

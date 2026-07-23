@@ -39,17 +39,18 @@
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {{-- Category --}}
+                {{-- Category Dropdown (Fixed) --}}
                 <div>
                     <label for="category" class="block text-xs font-bold text-slate-600 mb-1.5 uppercase">Kategori</label>
-                    <input type="text" name="category" id="category" list="category-list" required value="{{ old('category') }}"
-                           class="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-transparent transition-all"
-                           placeholder="Pilih atau Taip Kategori Baru...">
-                    <datalist id="category-list">
+                    <select name="category" id="category" required
+                            class="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-transparent transition-all">
+                        <option value="">-- Pilih Kategori --</option>
                         @foreach($categories as $cat)
-                            <option value="{{ $cat->name }}"></option>
+                            <option value="{{ $cat->name }}" {{ old('category') == $cat->name ? 'selected' : '' }}>
+                                {{ $cat->name }}
+                            </option>
                         @endforeach
-                    </datalist>
+                    </select>
                 </div>
 
                 {{-- Initial Stock --}}
@@ -174,7 +175,6 @@
         `;
         container.appendChild(row);
         updateNoticeVisibility();
-        // Focus on the first input of new row
         row.querySelector('input').focus();
     }
 
