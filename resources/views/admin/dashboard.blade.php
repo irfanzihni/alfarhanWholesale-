@@ -135,53 +135,51 @@
             </div>
         @endif
 
-        <!-- ROLE: PURCHASER PANEL (Add/Record stock entries) -->
-        @if(in_array($user->role, ['admin', 'purchaser']))
+        <!-- ROLE: ADMIN (Category Management) -->
+        @if(in_array($user->role, ['admin']))
             <div class="bg-white border border-slate-200 rounded-3xl p-6 md:p-8 shadow-xs space-y-6">
                 <div class="flex justify-between items-center border-b border-slate-100 pb-3">
                     <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
-                        <span>📦</span> Add Inventory Stock (Replenishment)
+                        <span>🏷️</span> Manage Categories
                     </h3>
-                    <span class="bg-blue-100 text-blue-800 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase">Purchasing Hub</span>
+                    <span class="bg-blue-100 text-blue-800 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase">Store Categories</span>
                 </div>
 
-                <form action="{{ route('admin.inventory.restock') }}" method="POST" class="space-y-5">
-                    @csrf
+                <div class="space-y-4">
+                    <!-- Add Category Form -->
+                    <form action="{{ route('admin.categories.store') }}" method="POST" class="flex gap-2">
+                        @csrf
+                        <input type="text" name="name" required placeholder="New Category Name" class="flex-grow px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-transparent transition-all">
+                        <button type="submit" class="bg-emerald-800 hover:bg-emerald-950 text-white font-bold py-2 px-4 rounded-lg shadow-sm transition-all text-sm uppercase tracking-wide">
+                            Add Category
+                        </button>
+                    </form>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <!-- Product Selection -->
-                        <div>
-                            <label for="restock-product-select" class="block text-xs font-bold text-slate-600 mb-1.5 uppercase">Choose Product</label>
-                            <select name="product_id" id="restock-product-select" onchange="updateRestockVariations()" required
-                                    class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-transparent transition-all">
-                                <option value="">Select product...</option>
-                                @foreach($productsDropdown as $p)
-                                    <option value="{{ $p->id }}">{{ $p->name }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-
-                        <!-- Variation Selection -->
-                        <div id="restock-variation-wrapper" class="hidden">
-                            <label for="restock-variation-select" class="block text-xs font-bold text-slate-600 mb-1.5 uppercase">Choose Variation</label>
-                            <select name="product_variation_id" id="restock-variation-select"
-                                    class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-transparent transition-all">
-                                <!-- Filled by JS -->
-                            </select>
-                        </div>
+                    <!-- List of Categories -->
+                    <div class="divide-y divide-slate-100 mt-4 border-t border-slate-100">
+                        @foreach($categoriesList as $category)
+                            <div class="py-3 flex justify-between items-center gap-4">
+                                <form action="{{ route('admin.categories.update', $category->id) }}" method="POST" class="flex-grow flex items-center gap-2">
+                                    @csrf
+                                    <input type="text" name="name" value="{{ $category->name }}" required class="flex-grow px-2 py-1.5 border border-slate-200 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600">
+                                    <button type="submit" class="bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs px-3 py-1.5 rounded font-bold transition-colors">
+                                        Update
+                                    </button>
+                                </form>
+                                <form action="{{ route('admin.categories.delete', $category->id) }}" method="POST">
+                                    @csrf
+                                    <button type="submit" class="text-red-500 hover:text-red-700 font-bold text-xs bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded transition-colors" onclick="return confirm('Are you sure you want to delete this category?')">
+                                        Delete
+                                    </button>
+                                </form>
+                            </div>
+                        @endforeach
+                        
+                        @if($categoriesList->isEmpty())
+                            <p class="text-center text-sm text-slate-500 py-4">No categories added yet. Add your first category above.</p>
+                        @endif
                     </div>
-
-                    <div>
-                        <label for="quantity" class="block text-xs font-bold text-slate-600 mb-1.5 uppercase">Restock Quantity (Units added)</label>
-                        <input type="number" name="quantity" min="1" required placeholder="Enter restock quantity"
-                               class="w-2/3 md:w-1/3 px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-transparent transition-all">
-                    </div>
-
-                    <button type="submit" 
-                            class="bg-emerald-800 hover:bg-emerald-950 text-white font-bold py-2.5 px-6 rounded-lg shadow-sm transition-all text-sm uppercase tracking-wide">
-                        Record Stock Addition
-                    </button>
-                </form>
+                </div>
             </div>
         @endif
 
@@ -334,29 +332,7 @@
         varSelect.innerHTML = html;
     }
 
-    // Purchaser restocking dropdown listener
-    function updateRestockVariations() {
-        const prodSelect = document.getElementById('restock-product-select');
-        const varWrapper = document.getElementById('restock-variation-wrapper');
-        const varSelect = document.getElementById('restock-variation-select');
-        if(!prodSelect) return;
-
-        const prodId = prodSelect.value;
-        if (!prodId || !productVariations[prodId] || productVariations[prodId].length === 0) {
-            varWrapper.classList.add('hidden');
-            varSelect.removeAttribute('required');
-            varSelect.innerHTML = '';
-            return;
-        }
-
-        varWrapper.classList.remove('hidden');
-        varSelect.setAttribute('required', 'required');
-        
-        let html = '<option value="">Select variation...</option>';
-        productVariations[prodId].forEach(v => {
-            html += `<option value="${v.id}">${v.name}: ${v.value} [Current Stock: ${v.stock}]</option>`;
-        });
-        varSelect.innerHTML = html;
-    }
+    // Admin Panel is missing Purchaser role since we replaced it.
+    // The previous updateRestockVariations method is now safely removed.
 </script>
 @endsection

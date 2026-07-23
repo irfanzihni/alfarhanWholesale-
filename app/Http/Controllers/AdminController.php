@@ -48,6 +48,9 @@ class AdminController extends Controller
         // Feed products for dropdowns
         $productsDropdown = Product::with('variations')->get();
 
+        // Categories for management
+        $categoriesList = \App\Models\Category::all();
+
         return view('admin.dashboard', compact(
             'user',
             'totalRevenue',
@@ -58,7 +61,8 @@ class AdminController extends Controller
             'lowStockProducts',
             'lowStockVariations',
             'outdoorOrders',
-            'productsDropdown'
+            'productsDropdown',
+            'categoriesList'
         ));
     }
 
@@ -239,6 +243,35 @@ class AdminController extends Controller
         $variation->delete();
 
         return back()->with('success', 'Variation deleted successfully.');
+    }
+
+    // ----------------------------------------------------
+    // ADMIN ONLY: CATEGORY MANAGEMENT (CRUD)
+    // ----------------------------------------------------
+    
+    public function categoryStore(Request $request)
+    {
+        $this->checkAccess('admin');
+        $request->validate(['name' => 'required|string|max:255']);
+        \App\Models\Category::create(['name' => $request->name]);
+        return back()->with('success', 'Category added successfully.');
+    }
+
+    public function categoryUpdate(Request $request, $id)
+    {
+        $this->checkAccess('admin');
+        $request->validate(['name' => 'required|string|max:255']);
+        $category = \App\Models\Category::findOrFail($id);
+        $category->update(['name' => $request->name]);
+        return back()->with('success', 'Category updated successfully.');
+    }
+
+    public function categoryDestroy($id)
+    {
+        $this->checkAccess('admin');
+        $category = \App\Models\Category::findOrFail($id);
+        $category->delete();
+        return back()->with('success', 'Category deleted successfully.');
     }
 
     // ----------------------------------------------------

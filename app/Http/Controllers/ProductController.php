@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
+use App\Models\Category;
 use Illuminate\Http\Request;
 
 class ProductController extends Controller
@@ -47,13 +48,11 @@ class ProductController extends Controller
         $products = $query->paginate(9);
 
         // Fetch categories and their counts for sidebar
-        $categories = [
-            'dates'   => 'Dates',
-            'honey'   => 'Honey',
-            'perfume' => 'Perfume',
-            'bakhoor' => 'Bakhoor',
-            'others'  => 'Others',
-        ];
+        $dbCategories = Category::all();
+        $categories = [];
+        foreach ($dbCategories as $cat) {
+            $categories[strtolower($cat->name)] = $cat->name;
+        }
 
         return view('shop.index', compact('products', 'categories'));
     }

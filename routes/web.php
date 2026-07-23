@@ -93,6 +93,11 @@ Route::middleware('auth')->group(function () {
             Route::post('/products/{productId}/variations', [AdminController::class, 'variationStore'])->name('admin.variations.store');
             Route::post('/variations/delete/{id}', [AdminController::class, 'variationDestroy'])->name('admin.variations.delete');
 
+            // Categories CRUD
+            Route::post('/categories', [AdminController::class, 'categoryStore'])->name('admin.categories.store');
+            Route::post('/categories/update/{id}', [AdminController::class, 'categoryUpdate'])->name('admin.categories.update');
+            Route::post('/categories/delete/{id}', [AdminController::class, 'categoryDestroy'])->name('admin.categories.delete');
+
             // Outdoor Sales Agent: Log Sales
             Route::post('/sales/outdoor', [AdminController::class, 'logOutdoorSale'])->name('admin.sales.outdoor');
 

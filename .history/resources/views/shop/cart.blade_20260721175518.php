@@ -241,10 +241,10 @@
                     </div>
 
                     <div class="pt-4">
-                        <button type="button" onclick="proceedToCheckout()"
+                        <a href="{{ route('checkout.index') }}" 
                            class="block text-center w-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-3.5 px-6 rounded-lg shadow-md hover:shadow-lg transition-all">
                             Proceed to Checkout
-                        </button>
+                        </a>
                     </div>
                 </div>
             </div>
@@ -252,24 +252,4 @@
         </div>
     @endif
 </div>
-@endsection
-
-@section('scripts')
-<script>
-    function proceedToCheckout() {
-        const checkboxes = document.querySelectorAll('input[name="selected_items[]"]:checked');
-        if (checkboxes.length === 0) {
-            alert('Please select at least one item to checkout.');
-            return;
-        }
-        
-        let url = "{{ route('checkout.index') }}?";
-        const params = new URLSearchParams();
-        checkboxes.forEach(cb => {
-            params.append('selected_items[]', cb.value);
-        });
-        
-        window.location.href = url + params.toString();
-    }
-</script>
 @endsection

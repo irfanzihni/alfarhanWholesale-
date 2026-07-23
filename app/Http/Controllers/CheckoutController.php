@@ -16,16 +16,29 @@ use Illuminate\Support\Facades\DB;
 class CheckoutController extends Controller
 {
     // Checkout Page
-    public function index()
+    public function index(Request $request)
     {
         $user = Auth::user();
         if (!$user) {
             return redirect()->route('login')->with('error', 'Please login to checkout.');
         }
 
-        $cartItems = CartItem::with(['product', 'variation'])
-            ->where('user_id', $user->id)
-            ->get();
+        $selectedItems = $request->input('selected_items', []);
+        
+        $query = CartItem::with(['product', 'variation'])
+            ->where('user_id', $user->id);
+
+        if (!empty($selectedItems)) {
+            $query->whereIn('id', $selectedItems);
+            session(['checkout_items' => $selectedItems]);
+        } else {
+            $selectedItems = session('checkout_items', []);
+            if (!empty($selectedItems)) {
+                $query->whereIn('id', $selectedItems);
+            }
+        }
+
+        $cartItems = $query->get();
 
         if ($cartItems->isEmpty()) {
             return redirect()->route('shop.cart')->with('error', 'Your cart is empty.');
@@ -117,9 +130,16 @@ class CheckoutController extends Controller
             return redirect()->back()->withErrors($validator)->withInput();
         }
 
-        $cartItems = CartItem::with(['product', 'variation'])
-            ->where('user_id', $user->id)
-            ->get();
+        $selectedItems = session('checkout_items', []);
+        
+        $query = CartItem::with(['product', 'variation'])
+            ->where('user_id', $user->id);
+            
+        if (!empty($selectedItems)) {
+            $query->whereIn('id', $selectedItems);
+        }
+        
+        $cartItems = $query->get();
 
         if ($cartItems->isEmpty()) {
             return redirect()->route('shop.cart')->with('error', 'Your cart is empty.');
@@ -231,8 +251,13 @@ class CheckoutController extends Controller
             }
 
             // 4. Clear Cart
-            CartItem::where('user_id', $user->id)->delete();
+            if (!empty($selectedItems)) {
+                CartItem::where('user_id', $user->id)->whereIn('id', $selectedItems)->delete();
+            } else {
+                CartItem::where('user_id', $user->id)->delete();
+            }
             session()->forget('applied_coupon_code');
+            session()->forget('checkout_items');
 
             DB::commit();
 
