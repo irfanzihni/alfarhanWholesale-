@@ -80,7 +80,8 @@ class AdminController extends Controller
     public function productCreate()
     {
         $this->checkAccess('admin');
-        return view('admin.products.create');
+        $categories = \App\Models\Category::all();
+        return view('admin.products.create', compact('categories'));
     }
 
     public function productStore(Request $request)
@@ -89,7 +90,7 @@ class AdminController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'category' => 'required|in:dates,honey,perfume,bakhoor,others',
+            'category' => 'required|string|max:255',
             'base_price' => 'required|numeric|min:0',
             'discount_price' => 'nullable|numeric|min:0|lt:base_price',
             'stock' => 'required|integer|min:0',
@@ -106,10 +107,18 @@ class AdminController extends Controller
             $imagePath = $this->uploadProductImage($request->file('image'));
         }
 
+        $categorySlug = \Illuminate\Support\Str::slug($request->category);
+        if (!\App\Models\Category::where('slug', $categorySlug)->exists()) {
+            \App\Models\Category::create([
+                'name' => $request->category,
+                'slug' => $categorySlug
+            ]);
+        }
+
         $product = Product::create([
             'name' => $request->name,
             'description' => $request->description,
-            'category' => $request->category,
+            'category' => $categorySlug,
             'base_price' => $request->base_price,
             'discount_price' => $request->discount_price,
             'stock' => $request->stock,
@@ -138,7 +147,8 @@ class AdminController extends Controller
     {
         $this->checkAccess('admin');
         $product = Product::with('variations')->findOrFail($id);
-        return view('admin.products.edit', compact('product'));
+        $categories = \App\Models\Category::all();
+        return view('admin.products.edit', compact('product', 'categories'));
     }
 
     public function productUpdate(Request $request, $id)
@@ -149,7 +159,7 @@ class AdminController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'category' => 'required|in:dates,honey,perfume,bakhoor,others',
+            'category' => 'required|string|max:255',
             'base_price' => 'required|numeric|min:0',
             'discount_price' => 'nullable|numeric|min:0|lt:base_price',
             'stock' => 'required|integer|min:0',
@@ -168,10 +178,18 @@ class AdminController extends Controller
             $imagePath = $this->uploadProductImage($request->file('image'));
         }
 
+        $categorySlug = \Illuminate\Support\Str::slug($request->category);
+        if (!\App\Models\Category::where('slug', $categorySlug)->exists()) {
+            \App\Models\Category::create([
+                'name' => $request->category,
+                'slug' => $categorySlug
+            ]);
+        }
+
         $product->update([
             'name' => $request->name,
             'description' => $request->description,
-            'category' => $request->category,
+            'category' => $categorySlug,
             'base_price' => $request->base_price,
             'discount_price' => $request->discount_price,
             'stock' => $request->stock,
