@@ -7,6 +7,31 @@ use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProductController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Artisan;
+
+// Temporary Route to Run Migrations on Live Server (Hostinger)
+Route::get('/run-migrations', function () {
+    try {
+        Artisan::call('migrate', [
+            '--force' => true
+        ]);
+        
+        // Also seed the default categories
+        if (\App\Models\Category::count() == 0) {
+            \App\Models\Category::insert([
+                ['name' => 'Dates'],
+                ['name' => 'Honey'],
+                ['name' => 'Perfume'],
+                ['name' => 'Bakhoor'],
+                ['name' => 'Others']
+            ]);
+        }
+        
+        return 'Migrations ran successfully! Categories seeded. You can now go back to your website.';
+    } catch (\Exception $e) {
+        return 'Error running migrations: ' . $e->getMessage();
+    }
+});
 
 // Customer Storefront Front-facing Catalog
 Route::get('/', [ProductController::class, 'home'])->name('shop.home');
