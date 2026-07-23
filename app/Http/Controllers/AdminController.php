@@ -264,8 +264,38 @@ class AdminController extends Controller
     }
 
     // ----------------------------------------------------
+    // ADMIN ONLY: CATEGORY MANAGEMENT (CRUD)
+    // RESTORED: Category functions are still needed by dashboard
+    // ----------------------------------------------------
+    
+    public function categoryStore(Request $request)
+    {
+        $this->checkAccess('admin');
+        $request->validate(['name' => 'required|string|max:255']);
+        \App\Models\Category::create(['name' => $request->name]);
+        return back()->with('success', 'Category added successfully.');
+    }
+
+    public function categoryUpdate(Request $request, $id)
+    {
+        $this->checkAccess('admin');
+        $request->validate(['name' => 'required|string|max:255']);
+        $category = \App\Models\Category::findOrFail($id);
+        $category->update(['name' => $request->name]);
+        return back()->with('success', 'Category updated successfully.');
+    }
+
+    public function categoryDestroy($id)
+    {
+        $this->checkAccess('admin');
+        $category = \App\Models\Category::findOrFail($id);
+        $category->delete();
+        return back()->with('success', 'Category deleted successfully.');
+    }
+
+    // ----------------------------------------------------
     // PURCHASER: INVENTORY MONITOR & RESTOCKING
-    // NOTE: Restock Product replaces the old Add Categories function
+    // NOTE: Restock Product is the main inventory function
     // ----------------------------------------------------
 
     public function inventoryList()
@@ -366,7 +396,7 @@ class AdminController extends Controller
 
     public function reports(Request $request)
     {
-        $this->checkAccess(['admin', 'outdoor_sales']); // Let outdoor sales view reports if needed, or only admin.
+        $this->checkAccess(['admin', 'outdoor_sales']);
 
         // Sales by type
         $onlineRevenue = Order::where('order_type', 'online')->where('status', '!=', 'cancelled')->sum('final_amount');
