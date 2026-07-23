@@ -130,25 +130,25 @@
                 </div>
             </div>
 
-            {{-- Courier Rate Selection (shown only for delivery mode) --}}
-            <div id="courier-card" class="bg-white border border-emerald-100 rounded-2xl shadow-xs p-6 md:p-8 space-y-4 hidden">
-                <h3 class="text-lg font-bold text-emerald-950 border-b border-emerald-50 pb-2">Pilihan Kurier</h3>
-                <p class="text-xs text-slate-500">Sila masukkan poskod dan negeri yang betul untuk mengira kadar kurier.</p>
-                
+            {{-- Courier Rate Selection (shown for delivery mode) --}}
+            <div id="courier-card" class="bg-white border border-emerald-100 rounded-2xl shadow-xs p-6 md:p-8 space-y-4">
+                <h3 class="text-lg font-bold text-emerald-950 border-b border-emerald-50 pb-2">🚚 Pilihan Kurier</h3>
+                <p class="text-xs text-slate-500" id="courier-hint">Sila lengkapkan poskod dan negeri untuk melihat kadar kurier.</p>
+
                 <input type="hidden" name="shipping_courier" id="shipping_courier">
                 <input type="hidden" name="shipping_service" id="shipping_service">
                 <input type="hidden" name="shipping_cost" id="shipping_cost" value="0.00">
 
-                <div id="courier-list" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {{-- Dynamic couriers loaded via JS --}}
-                </div>
-                
                 <div id="courier-loading" class="hidden text-center py-6">
                     <svg class="animate-spin h-8 w-8 text-emerald-700 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
-                    <p class="text-xs text-slate-500 mt-2 font-medium">Mencari kadar courier terbaik...</p>
+                    <p class="text-xs text-slate-500 mt-2 font-medium">Sedang mendapatkan kadar kurier terkini...</p>
+                </div>
+
+                <div id="courier-list" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {{-- Dynamic couriers loaded via JS --}}
                 </div>
             </div>
 
@@ -251,183 +251,219 @@
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        const postcodeField  = document.getElementById('postcode');
-        const stateField     = document.getElementById('state');
-        const courierCard    = document.getElementById('courier-card');
-        const courierList    = document.getElementById('courier-list');
-        const courierLoading = document.getElementById('courier-loading');
+        const postcodeField    = document.getElementById('postcode');
+        const stateField       = document.getElementById('state');
+        const courierCard      = document.getElementById('courier-card');
+        const courierList      = document.getElementById('courier-list');
+        const courierLoading   = document.getElementById('courier-loading');
+        const courierHint      = document.getElementById('courier-hint');
 
-        const shippingCourierInput = document.getElementById('shipping_courier');
-        const shippingServiceInput = document.getElementById('shipping_service');
-        const shippingCostInput    = document.getElementById('shipping_cost');
-        const shippingMethodInput  = document.getElementById('shipping_method');
+        const shippingCourierInput   = document.getElementById('shipping_courier');
+        const shippingServiceInput   = document.getElementById('shipping_service');
+        const shippingCostInput      = document.getElementById('shipping_cost');
+        const shippingMethodInput    = document.getElementById('shipping_method');
+        const shippingFeeRow         = document.getElementById('shipping-fee-row');
+        const shippingCourierNameSpan= document.getElementById('shipping-courier-name');
+        const shippingFeeAmountSpan  = document.getElementById('shipping-fee-amount');
+        const grandTotalTextSpan     = document.querySelector('.text-emerald-800.text-lg');
+        const checkoutSubmitBtn      = document.getElementById('checkout-submit-btn');
 
-        const shippingFeeRow       = document.getElementById('shipping-fee-row');
-        const shippingCourierNameSpan = document.getElementById('shipping-courier-name');
-        const shippingFeeAmountSpan   = document.getElementById('shipping-fee-amount');
-        const grandTotalTextSpan   = document.querySelector('.text-emerald-800.text-lg');
-        const checkoutSubmitBtn    = document.getElementById('checkout-submit-btn');
-
-        // Shipping method radio buttons
-        const radioDelivery = document.getElementById('shipping-method-delivery');
-        const radioPickup   = document.getElementById('shipping-method-pickup');
-        const labelDelivery = document.getElementById('shipping-method-delivery-label');
-        const labelPickup   = document.getElementById('shipping-method-pickup-label');
+        const radioDelivery  = document.getElementById('shipping-method-delivery');
+        const radioPickup    = document.getElementById('shipping-method-pickup');
+        const labelDelivery  = document.getElementById('shipping-method-delivery-label');
+        const labelPickup    = document.getElementById('shipping-method-pickup-label');
         const selfPickupInfo = document.getElementById('self-pickup-info');
-
-        // Address fields that become optional for self pickup
-        const addressFields = [
-            document.getElementById('street_address'),
-            document.getElementById('postcode'),
-            document.getElementById('city'),
-            document.getElementById('state'),
-        ];
 
         const subtotal    = {{ $subtotal }};
         const discount    = {{ $discount }};
         const totalWeight = {{ $totalWeight }};
+
+        let fetchTimeout = null;
+
+        // ── Update grand total display ─────────────────────────────────────
+        function updateTotals(shippingFee) {
+            const grandTotal = Math.max(0, subtotal - discount + shippingFee);
+            if (grandTotalTextSpan) grandTotalTextSpan.textContent = 'RM' + grandTotal.toFixed(2);
+            if (checkoutSubmitBtn)  checkoutSubmitBtn.textContent  = 'Teruskan Pembayaran (RM' + grandTotal.toFixed(2) + ')';
+        }
+
+        // ── Render courier cards from API response ─────────────────────────
+        function renderCouriers(rates) {
+            courierList.innerHTML = '';
+
+            if (!rates || rates.length === 0) {
+                courierList.innerHTML = '<p class="text-xs text-orange-600 col-span-2 text-center font-medium py-4">Tiada kurier tersedia untuk poskod/negeri ini. Sila semak semula maklumat alamat.</p>';
+                return;
+            }
+
+            rates.forEach(function(rate, i) {
+                const card = document.createElement('label');
+                card.className = 'border-2 border-slate-200 rounded-xl p-4 flex items-center justify-between cursor-pointer hover:bg-emerald-50/40 transition-all bg-white gap-3';
+
+                const logoHtml = rate.logo
+                    ? '<img src="' + rate.logo + '" alt="' + rate.courier_name + '" class="h-8 w-auto object-contain rounded" onerror="this.style.display=\'none\'" />'
+                    : '<div class="h-8 w-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 font-bold text-xs">' + rate.courier_name.charAt(0) + '</div>';
+
+                card.innerHTML = [
+                    '<div class="flex items-center gap-3 flex-1 min-w-0">',
+                        '<input type="radio" name="selected_courier"',
+                        ' id="courier_option_' + i + '"',
+                        ' value="' + rate.service_id + '"',
+                        ' data-courier="' + rate.courier_name.replace(/"/g, '&quot;') + '"',
+                        ' data-service="' + rate.service_name.replace(/"/g, '&quot;') + '"',
+                        ' data-price="' + rate.price + '"',
+                        ' class="h-4 w-4 shrink-0 text-emerald-600 focus:ring-emerald-500">',
+                        logoHtml,
+                        '<div class="min-w-0">',
+                            '<span class="block font-bold text-sm text-slate-800 truncate">' + rate.courier_name + '</span>',
+                            '<span class="block text-[10px] text-slate-500 mt-0.5">' + rate.service_name + ' &bull; ' + rate.delivery + '</span>',
+                        '</div>',
+                    '</div>',
+                    '<span class="font-extrabold text-sm text-emerald-700 shrink-0 ml-2">RM' + parseFloat(rate.price).toFixed(2) + '</span>'
+                ].join('');
+
+                // Selection handler
+                card.querySelector('input').addEventListener('change', function () {
+                    // Reset all card borders
+                    document.querySelectorAll('#courier-list label').forEach(function(l) {
+                        l.classList.remove('border-emerald-500', 'bg-emerald-50');
+                        l.classList.add('border-slate-200', 'bg-white');
+                    });
+                    // Highlight selected card
+                    card.classList.remove('border-slate-200', 'bg-white');
+                    card.classList.add('border-emerald-500', 'bg-emerald-50');
+
+                    const price = parseFloat(this.dataset.price);
+                    shippingCourierInput.value   = this.dataset.courier;
+                    shippingServiceInput.value   = this.dataset.service;
+                    shippingCostInput.value      = price.toFixed(2);
+                    shippingCourierNameSpan.textContent    = this.dataset.courier;
+                    shippingFeeAmountSpan.textContent      = 'RM' + price.toFixed(2);
+                    shippingFeeRow.classList.remove('hidden');
+                    updateTotals(price);
+                });
+
+                courierList.appendChild(card);
+            });
+        }
+
+        // ── Fetch live courier rates from EasyParcel ───────────────────────
+        function fetchRates() {
+            if (shippingMethodInput.value === 'self_pickup') return;
+
+            const postcode = postcodeField.value.trim();
+            const state    = stateField.value.trim();
+
+            // Need 5-digit postcode AND a selected state
+            if (postcode.length !== 5 || !state) {
+                if (courierHint) courierHint.textContent = 'Sila lengkapkan poskod (5 digit) dan negeri untuk melihat kadar kurier.';
+                return;
+            }
+
+            if (courierHint) courierHint.textContent = '';
+
+            // Show loading, hide old list
+            courierLoading.classList.remove('hidden');
+            courierList.classList.add('hidden');
+            courierList.innerHTML = '';
+
+            // Reset selections
+            shippingCourierInput.value = '';
+            shippingServiceInput.value = '';
+            shippingCostInput.value    = '0.00';
+            shippingFeeRow.classList.add('hidden');
+            updateTotals(0);
+
+            const url = '/checkout/shipping-rates?postcode=' + encodeURIComponent(postcode)
+                      + '&state=' + encodeURIComponent(state)
+                      + '&weight=' + encodeURIComponent(totalWeight);
+
+            fetch(url)
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    courierLoading.classList.add('hidden');
+                    courierList.classList.remove('hidden');
+
+                    if (data.success) {
+                        renderCouriers(data.rates);
+                    } else {
+                        courierList.innerHTML = '<p class="text-xs text-red-600 col-span-2 text-center font-medium py-4">Ralat: ' + (data.message || 'Gagal mendapatkan kadar kurier.') + '</p>';
+                    }
+                })
+                .catch(function(err) {
+                    console.error('Courier fetch error:', err);
+                    courierLoading.classList.add('hidden');
+                    courierList.classList.remove('hidden');
+                    courierList.innerHTML = '<p class="text-xs text-red-600 col-span-2 text-center font-medium py-4">Gagal menghubungi pelayan. Sila muat semula halaman dan cuba lagi.</p>';
+                });
+        }
+
+        // ── Debounced postcode listener (wait for full 5 digits) ───────────
+        postcodeField.addEventListener('input', function() {
+            clearTimeout(fetchTimeout);
+            if (this.value.trim().length === 5) {
+                fetchTimeout = setTimeout(fetchRates, 400);
+            }
+        });
+
+        stateField.addEventListener('change', function() {
+            clearTimeout(fetchTimeout);
+            fetchTimeout = setTimeout(fetchRates, 200);
+        });
 
         // ── Shipping method toggle ─────────────────────────────────────────
         function setShippingMethod(method) {
             shippingMethodInput.value = method;
 
             if (method === 'self_pickup') {
-                // Show pickup info, hide courier card
                 selfPickupInfo.classList.remove('hidden');
                 courierCard.classList.add('hidden');
 
-                // Style labels
                 labelPickup.classList.add('border-emerald-500', 'bg-emerald-50');
                 labelPickup.classList.remove('border-slate-200');
                 labelDelivery.classList.remove('border-emerald-500', 'bg-emerald-50');
                 labelDelivery.classList.add('border-slate-200');
 
-                // Address fields become optional
-                addressFields.forEach(f => { if (f) f.removeAttribute('required'); });
+                document.querySelectorAll('#street_address,#postcode,#city,#state').forEach(function(f) {
+                    if (f) f.removeAttribute('required');
+                });
 
-                // Reset courier selection
                 shippingCourierInput.value = '';
                 shippingServiceInput.value = '';
                 shippingCostInput.value    = '0.00';
                 shippingFeeRow.classList.add('hidden');
-
-                // Update totals: shipping = 0
                 updateTotals(0);
-            } else {
-                // Show courier card if postcode filled
-                selfPickupInfo.classList.add('hidden');
 
-                // Style labels
+            } else {
+                selfPickupInfo.classList.add('hidden');
+                courierCard.classList.remove('hidden');
+
                 labelDelivery.classList.add('border-emerald-500', 'bg-emerald-50');
                 labelDelivery.classList.remove('border-slate-200');
                 labelPickup.classList.remove('border-emerald-500', 'bg-emerald-50');
                 labelPickup.classList.add('border-slate-200');
 
-                // Address fields become required again
-                const textFields = [document.getElementById('street_address'), document.getElementById('city')];
-                textFields.forEach(f => { if (f) f.setAttribute('required', 'required'); });
-                const postcodeEl = document.getElementById('postcode');
-                if (postcodeEl) postcodeEl.setAttribute('required', 'required');
-                const stateEl = document.getElementById('state');
-                if (stateEl) stateEl.setAttribute('required', 'required');
+                document.querySelectorAll('#street_address,#city').forEach(function(f) {
+                    if (f) f.setAttribute('required', 'required');
+                });
+                document.querySelectorAll('#postcode,#state').forEach(function(f) {
+                    if (f) f.setAttribute('required', 'required');
+                });
 
-                // Re-fetch rates if postcode already filled
-                if (postcodeField.value.length === 5 && stateField.value) {
+                // Auto-fetch if fields already filled
+                if (postcodeField.value.trim().length === 5 && stateField.value.trim()) {
                     fetchRates();
                 }
             }
         }
 
-        radioDelivery.addEventListener('change', () => setShippingMethod('delivery'));
-        radioPickup.addEventListener('change',   () => setShippingMethod('self_pickup'));
+        radioDelivery.addEventListener('change', function() { setShippingMethod('delivery'); });
+        radioPickup.addEventListener('change',   function() { setShippingMethod('self_pickup'); });
 
-        // ── Shipping fee row label update ─────────────────────────────────
-        function updateShippingFeeLabel(courierName) {
-            shippingCourierNameSpan.textContent = courierName;
+        // ── Auto-fetch on page load if postcode already present ────────────
+        if (postcodeField.value.trim().length === 5 && stateField.value.trim()) {
+            fetchRates();
         }
-
-        // ── Totals update ─────────────────────────────────────────────────
-        function updateTotals(shippingFee) {
-            const grandTotal = Math.max(0, subtotal - discount + shippingFee);
-            if (grandTotalTextSpan) grandTotalTextSpan.textContent = 'RM' + grandTotal.toFixed(2);
-            if (checkoutSubmitBtn)  checkoutSubmitBtn.textContent  = `Teruskan Pembayaran (RM${grandTotal.toFixed(2)})`;
-        }
-
-        // ── Fetch courier rates ───────────────────────────────────────────
-        function fetchRates() {
-            if (shippingMethodInput.value === 'self_pickup') return;
-
-            const postcode = postcodeField.value.trim();
-            const state    = stateField.value;
-
-            if (postcode.length === 5 && state) {
-                courierCard.classList.remove('hidden');
-                courierLoading.classList.remove('hidden');
-                courierList.classList.add('hidden');
-                courierList.innerHTML = '';
-
-                shippingCourierInput.value = '';
-                shippingServiceInput.value = '';
-                shippingCostInput.value    = '0.00';
-                shippingFeeRow.classList.add('hidden');
-                updateTotals(0);
-
-                fetch(`/checkout/shipping-rates?postcode=${postcode}&state=${state}&weight=${totalWeight}`)
-                    .then(r => r.json())
-                    .then(data => {
-                        courierLoading.classList.add('hidden');
-                        courierList.classList.remove('hidden');
-
-                        if (data.success && data.rates.length > 0) {
-                            data.rates.forEach((rate, i) => {
-                                const card = document.createElement('label');
-                                card.className = 'border-2 border-slate-200 rounded-xl p-4 flex items-center justify-between cursor-pointer hover:bg-slate-50 transition-all bg-white';
-                                card.innerHTML = `
-                                    <div class="flex items-center gap-3">
-                                        <input type="radio" name="selected_courier" id="courier_option_${i}" value="${rate.service_id}" data-courier="${rate.courier_name}" data-service="${rate.service_name}" data-price="${rate.price}" class="h-4 w-4 text-emerald-600 focus:ring-emerald-500">
-                                        <div>
-                                            <span class="block font-bold text-sm text-slate-800">${rate.courier_name}</span>
-                                            <span class="block text-[10px] text-slate-500 mt-0.5">${rate.service_name} (${rate.delivery})</span>
-                                        </div>
-                                    </div>
-                                    <span class="font-extrabold text-sm text-emerald-800">RM${rate.price.toFixed(2)}</span>
-                                `;
-                                card.querySelector('input').addEventListener('change', function () {
-                                    document.querySelectorAll('#courier-list label').forEach(l => {
-                                        l.classList.remove('border-emerald-500', 'bg-emerald-50');
-                                        l.classList.add('border-slate-200', 'bg-white');
-                                    });
-                                    card.classList.remove('border-slate-200', 'bg-white');
-                                    card.classList.add('border-emerald-500', 'bg-emerald-50');
-
-                                    shippingCourierInput.value = this.dataset.courier;
-                                    shippingServiceInput.value = this.dataset.service;
-                                    shippingCostInput.value    = this.dataset.price;
-
-                                    updateShippingFeeLabel(this.dataset.courier);
-                                    shippingFeeAmountSpan.textContent = 'RM' + parseFloat(this.dataset.price).toFixed(2);
-                                    shippingFeeRow.classList.remove('hidden');
-                                    updateTotals(parseFloat(this.dataset.price));
-                                });
-                                courierList.appendChild(card);
-                            });
-                        } else {
-                            courierList.innerHTML = '<p class="text-xs text-red-600 col-span-2 text-center font-medium">Tiada kurier tersedia untuk poskod/negeri ini.</p>';
-                        }
-                    })
-                    .catch(err => {
-                        console.error(err);
-                        courierLoading.classList.add('hidden');
-                        courierList.classList.remove('hidden');
-                        courierList.innerHTML = '<p class="text-xs text-red-600 col-span-2 text-center font-medium">Gagal memuatkan kadar kurier. Sila cuba lagi.</p>';
-                    });
-            }
-        }
-
-        postcodeField.addEventListener('input', function() {
-            if (this.value.length === 5) fetchRates();
-        });
-        stateField.addEventListener('change', fetchRates);
     });
 </script>
 @endpush
