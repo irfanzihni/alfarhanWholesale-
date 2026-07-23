@@ -39,15 +39,22 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <!-- Category -->
                 <div>
-                    <label for="category" class="block text-xs font-bold text-slate-600 mb-1.5 uppercase">Category</label>
-                    <select name="category" id="category" required
-                            class="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-transparent transition-all">
-                        <option value="dates" {{ $product->category == 'dates' ? 'selected' : '' }}>Dates</option>
-                        <option value="honey" {{ $product->category == 'honey' ? 'selected' : '' }}>Honey</option>
-                        <option value="perfume" {{ $product->category == 'perfume' ? 'selected' : '' }}>Perfume</option>
-                        <option value="bakhoor" {{ $product->category == 'bakhoor' ? 'selected' : '' }}>Bakhoor</option>
-                        <option value="others" {{ $product->category == 'others' ? 'selected' : '' }}>Others</option>
-                    </select>
+                    <label for="category" class="block text-xs font-bold text-slate-600 mb-1.5 uppercase">Kategori</label>
+                    @php
+                        $catName = old('category', $product->category);
+                        $matchingCat = $categories->where('slug', $product->category)->first();
+                        if ($matchingCat && !old('category')) {
+                            $catName = $matchingCat->name;
+                        }
+                    @endphp
+                    <input type="text" name="category" id="category" list="category-list" required value="{{ $catName }}"
+                           class="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-transparent transition-all"
+                           placeholder="Pilih atau Taip Kategori Baru...">
+                    <datalist id="category-list">
+                        @foreach($categories as $cat)
+                            <option value="{{ $cat->name }}"></option>
+                        @endforeach
+                    </datalist>
                 </div>
 
                 <!-- Stock -->

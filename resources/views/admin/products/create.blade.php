@@ -42,15 +42,14 @@
                 {{-- Category --}}
                 <div>
                     <label for="category" class="block text-xs font-bold text-slate-600 mb-1.5 uppercase">Kategori</label>
-                    <select name="category" id="category" required
-                            class="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-transparent transition-all">
-                        <option value="">Pilih Kategori...</option>
-                        <option value="dates" {{ old('category') == 'dates' ? 'selected' : '' }}>Dates (Kurma)</option>
-                        <option value="honey" {{ old('category') == 'honey' ? 'selected' : '' }}>Honey (Madu)</option>
-                        <option value="perfume" {{ old('category') == 'perfume' ? 'selected' : '' }}>Perfume (Minyak Wangi)</option>
-                        <option value="bakhoor" {{ old('category') == 'bakhoor' ? 'selected' : '' }}>Bakhoor</option>
-                        <option value="others" {{ old('category') == 'others' ? 'selected' : '' }}>Others</option>
-                    </select>
+                    <input type="text" name="category" id="category" list="category-list" required value="{{ old('category') }}"
+                           class="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-transparent transition-all"
+                           placeholder="Pilih atau Taip Kategori Baru...">
+                    <datalist id="category-list">
+                        @foreach($categories as $cat)
+                            <option value="{{ $cat->name }}"></option>
+                        @endforeach
+                    </datalist>
                 </div>
 
                 {{-- Initial Stock --}}
