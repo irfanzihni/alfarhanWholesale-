@@ -24,6 +24,14 @@ class CartController extends Controller
             ->where('user_id', $user->id)
             ->get();
 
+        // If no items are currently selected, default all items to selected
+        if ($cartItems->isNotEmpty() && !$cartItems->contains('is_selected', true)) {
+            CartItem::where('user_id', $user->id)->update(['is_selected' => true]);
+            $cartItems = CartItem::with(['product', 'variation'])
+                ->where('user_id', $user->id)
+                ->get();
+        }
+
         $subtotal = 0;
         $totalWeight = 0;
         foreach ($cartItems as $item) {
@@ -124,6 +132,7 @@ class CartController extends Controller
                 'product_id' => $productId,
                 'product_variation_id' => $variationId,
                 'quantity' => $quantity,
+                'is_selected' => true,
             ]);
         }
 

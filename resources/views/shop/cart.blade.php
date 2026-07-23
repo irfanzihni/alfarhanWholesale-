@@ -290,6 +290,7 @@
                 cb.checked = isMasterChecked;
             });
             updateMasterCheckboxState();
+            recalculateClientSummary();
             updateServerSelection();
         }
 
@@ -317,6 +318,7 @@
                 });
 
                 updateMasterCheckboxState();
+                recalculateClientSummary();
                 updateServerSelection();
             });
         });
@@ -352,9 +354,41 @@
             });
         }
 
-        // Run initial state calculation on load
+        // Run initial state calculation & summary recalculation on load
         updateMasterCheckboxState();
+        recalculateClientSummary();
     });
+
+    // Instant client-side summary calculation from checked checkboxes
+    function recalculateClientSummary() {
+        let subtotal = 0;
+        let weight = 0;
+        const processedIds = new Set();
+
+        document.querySelectorAll('.item-checkbox:checked').forEach(cb => {
+            const itemId = cb.dataset.itemId || cb.value;
+            if (!processedIds.has(itemId)) {
+                processedIds.add(itemId);
+                subtotal += parseFloat(cb.dataset.price || 0);
+                weight += parseFloat(cb.dataset.weight || 0);
+            }
+        });
+
+        const subtotalEl = document.getElementById('summary-subtotal');
+        if (subtotalEl) subtotalEl.textContent = 'RM' + subtotal.toFixed(2);
+
+        const weightEl = document.getElementById('summary-weight');
+        if (weightEl) weightEl.textContent = weight.toFixed(2) + ' kg';
+
+        const totalEl = document.getElementById('summary-total');
+        const discountEl = document.getElementById('summary-discount');
+        let discount = 0;
+        if (discountEl && discountEl.textContent && !document.getElementById('coupon-row')?.classList.contains('hidden')) {
+            discount = parseFloat(discountEl.textContent.replace(/[^0-9.]/g, '')) || 0;
+        }
+        const total = Math.max(0, subtotal - discount);
+        if (totalEl) totalEl.textContent = 'RM' + total.toFixed(2);
+    }
 
     // Send selection state to server and refresh summary
     function updateServerSelection() {

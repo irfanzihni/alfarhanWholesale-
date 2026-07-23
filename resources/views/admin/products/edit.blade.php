@@ -69,7 +69,7 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <!-- Base Price -->
                 <div>
                     <label for="base_price" class="block text-xs font-bold text-slate-600 mb-1.5 uppercase">Base Price (RM)</label>
@@ -79,10 +79,18 @@
 
                 <!-- Discount Price -->
                 <div>
-                    <label for="discount_price" class="block text-xs font-bold text-slate-600 mb-1.5 uppercase">Discount Price (RM - Optional)</label>
+                    <label for="discount_price" class="block text-xs font-bold text-slate-600 mb-1.5 uppercase">Discount Price (RM)</label>
                     <input type="number" name="discount_price" id="discount_price" step="0.01" value="{{ old('discount_price', $product->discount_price) }}" min="0"
                            class="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-transparent transition-all">
-                    <span class="text-[10px] text-slate-400 font-semibold mt-1 block">Set an active discount price (crosses out base price on storefront).</span>
+                </div>
+
+                <!-- Weight -->
+                <div>
+                    <label for="weight" class="block text-xs font-bold text-slate-600 mb-1.5 uppercase">Berat Produk (kg)</label>
+                    <input type="number" name="weight" id="weight" step="0.01" value="{{ old('weight', $product->weight ?? '0.50') }}" min="0.01" required
+                           class="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-transparent transition-all"
+                           placeholder="0.50">
+                    <span class="text-[10px] text-slate-400 font-semibold mt-1 block">Dalam kilogram (kg).</span>
                 </div>
             </div>
 

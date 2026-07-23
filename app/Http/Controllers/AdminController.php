@@ -93,6 +93,7 @@ class AdminController extends Controller
             'category' => 'required|string|max:255',
             'base_price' => 'required|numeric|min:0',
             'discount_price' => 'nullable|numeric|min:0|lt:base_price',
+            'weight' => 'nullable|numeric|min:0.01',
             'stock' => 'required|integer|min:0',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:4096',
             'variations' => 'nullable|array',
@@ -121,6 +122,7 @@ class AdminController extends Controller
             'category' => $categorySlug,
             'base_price' => $request->base_price,
             'discount_price' => $request->discount_price,
+            'weight' => $request->weight ?? 0.50,
             'stock' => $request->stock,
             'image_url' => $imagePath,
         ]);
@@ -162,6 +164,7 @@ class AdminController extends Controller
             'category' => 'required|string|max:255',
             'base_price' => 'required|numeric|min:0',
             'discount_price' => 'nullable|numeric|min:0|lt:base_price',
+            'weight' => 'nullable|numeric|min:0.01',
             'stock' => 'required|integer|min:0',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:4096',
         ]);
@@ -192,6 +195,7 @@ class AdminController extends Controller
             'category' => $categorySlug,
             'base_price' => $request->base_price,
             'discount_price' => $request->discount_price,
+            'weight' => $request->weight ?? 0.50,
             'stock' => $request->stock,
             'image_url' => $imagePath,
         ]);
