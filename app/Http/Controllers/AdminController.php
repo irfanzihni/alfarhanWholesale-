@@ -136,6 +136,7 @@ class AdminController extends Controller
                         'name'       => $varData['name'],
                         'value'      => $varData['value'],
                         'price'      => $varData['price'] ?: null,
+                        'weight'     => isset($varData['weight']) && $varData['weight'] !== '' ? (float)$varData['weight'] : null,
                         'stock'      => (int) ($varData['stock'] ?? 0),
                     ]);
                 }
@@ -243,6 +244,7 @@ class AdminController extends Controller
             'variation_name' => 'required|string|max:255',
             'variation_value' => 'required|string|max:255',
             'variation_price' => 'nullable|numeric|min:0',
+            'variation_weight' => 'nullable|numeric|min:0',
             'variation_stock' => 'required|integer|min:0',
         ]);
 
@@ -251,6 +253,7 @@ class AdminController extends Controller
             'name' => $request->variation_name,
             'value' => $request->variation_value,
             'price' => $request->variation_price,
+            'weight' => $request->filled('variation_weight') ? $request->variation_weight : null,
             'stock' => $request->variation_stock,
         ]);
 

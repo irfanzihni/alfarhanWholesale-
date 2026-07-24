@@ -50,7 +50,7 @@ class CheckoutController extends Controller
         $totalWeight = 0;
         foreach ($cartItems as $item) {
             $subtotal += $item->subtotal;
-            $totalWeight += ($item->product->weight ?? 0.50) * $item->quantity;
+            $totalWeight += $item->item_weight;
         }
 
         // Apply coupon if valid

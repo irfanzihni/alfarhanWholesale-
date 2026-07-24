@@ -129,6 +129,7 @@
                     <tr class="bg-slate-50 border-b border-slate-100 text-[9px] font-bold text-slate-400 uppercase tracking-wider">
                         <th class="p-4 pl-6">Variation Name</th>
                         <th class="p-4">Value</th>
+                        <th class="p-4 text-center">Weight (kg)</th>
                         <th class="p-4 text-right">Price Override</th>
                         <th class="p-4 text-center">Stock</th>
                         <th class="p-4 text-right pr-6">Action</th>
@@ -139,6 +140,12 @@
                         <tr>
                             <td class="p-4 pl-6 font-bold text-slate-900">{{ $var->name }}</td>
                             <td class="p-4">{{ $var->value }}</td>
+                            <td class="p-4 text-center font-semibold text-slate-800">
+                                {{ number_format($var->active_weight, 2) }} kg
+                                @if($var->weight === null)
+                                    <span class="text-[10px] text-slate-400 block font-normal">(Auto/Base)</span>
+                                @endif
+                            </td>
                             <td class="p-4 text-right font-semibold text-emerald-800">
                                 @if($var->price !== null)
                                     RM{{ number_format($var->price, 2) }}
@@ -162,7 +169,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="p-6 text-center text-slate-400 italic">No variations added yet for this product.</td>
+                            <td colspan="6" class="p-6 text-center text-slate-400 italic">No variations added yet for this product.</td>
                         </tr>
                     @endforelse
                 </tbody>
@@ -173,7 +180,7 @@
         <div class="border-t border-slate-100 pt-6">
             <h4 class="text-sm font-bold text-slate-800 mb-4">Add Variation</h4>
             
-            <form action="{{ route('admin.variations.store', $product->id) }}" method="POST" class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+            <form action="{{ route('admin.variations.store', $product->id) }}" method="POST" class="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
                 @csrf
                 <!-- Variation Name -->
                 <div>
@@ -186,6 +193,13 @@
                 <div>
                     <label for="variation_value" class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Value (e.g. 1kg)</label>
                     <input type="text" name="variation_value" id="variation_value" required placeholder="500g, 1kg, Grade A..."
+                           class="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-transparent transition-all">
+                </div>
+
+                <!-- Weight Override -->
+                <div>
+                    <label for="variation_weight" class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Weight kg (Optional)</label>
+                    <input type="number" name="variation_weight" id="variation_weight" step="0.01" min="0" placeholder="Auto if empty"
                            class="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-transparent transition-all">
                 </div>
 
@@ -203,7 +217,7 @@
                         <input type="number" name="variation_stock" id="variation_stock" required min="0" value="0"
                                class="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-transparent transition-all">
                         <button type="submit" 
-                                class="bg-emerald-800 hover:bg-emerald-950 text-white font-bold py-2 px-4 rounded-lg text-xs uppercase tracking-wider transition-colors shrink-0">
+                                class="bg-emerald-800 hover:bg-emerald-950 text-white font-bold py-2 px-3 rounded-lg text-xs uppercase tracking-wider transition-colors shrink-0">
                             Add Option
                         </button>
                     </div>

@@ -132,8 +132,16 @@
 
             {{-- Courier Rate Selection (shown for delivery mode) --}}
             <div id="courier-card" class="bg-white border border-emerald-100 rounded-2xl shadow-xs p-6 md:p-8 space-y-4">
-                <h3 class="text-lg font-bold text-emerald-950 border-b border-emerald-50 pb-2">🚚 Pilihan Kurier</h3>
-                <p class="text-xs text-slate-500" id="courier-hint">Sila lengkapkan poskod dan negeri untuk melihat kadar kurier.</p>
+                <div class="flex items-center justify-between border-b border-emerald-50 pb-2">
+                    <h3 class="text-lg font-bold text-emerald-950">🚚 Pilihan Kurier</h3>
+                    <button type="button" id="btn-check-courier" class="text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg transition-all flex items-center gap-1 shadow-xs">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                        Semak Kadar Kurier
+                    </button>
+                </div>
+                <p class="text-xs text-slate-500" id="courier-hint">Sila lengkapkan poskod (5 digit) dan negeri untuk melihat kadar kurier.</p>
 
                 <input type="hidden" name="shipping_courier" id="shipping_courier">
                 <input type="hidden" name="shipping_service" id="shipping_service">
@@ -144,7 +152,7 @@
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
-                    <p class="text-xs text-slate-500 mt-2 font-medium">Sedang mendapatkan kadar kurier terkini...</p>
+                    <p class="text-xs text-slate-500 mt-2 font-medium">Sedang mengira kadar kurier terbaik...</p>
                 </div>
 
                 <div id="courier-list" class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -398,17 +406,42 @@
                 });
         }
 
+        const btnCheckCourier = document.getElementById('btn-check-courier');
+        if (btnCheckCourier) {
+            btnCheckCourier.addEventListener('click', function(e) {
+                e.preventDefault();
+                const postcode = postcodeField.value.trim();
+                const state    = stateField.value.trim();
+
+                if (postcode.length !== 5) {
+                    if (courierHint) courierHint.textContent = '⚠️ Sila masukkan poskod yang sah (5 digit).';
+                    postcodeField.focus();
+                    return;
+                }
+
+                if (!state) {
+                    if (courierHint) courierHint.textContent = '⚠️ Sila pilih negeri.';
+                    stateField.focus();
+                    return;
+                }
+
+                fetchRates();
+            });
+        }
+
         // ── Debounced postcode listener (wait for full 5 digits) ───────────
         postcodeField.addEventListener('input', function() {
             clearTimeout(fetchTimeout);
-            if (this.value.trim().length === 5) {
+            if (this.value.trim().length === 5 && stateField.value.trim()) {
                 fetchTimeout = setTimeout(fetchRates, 400);
             }
         });
 
         stateField.addEventListener('change', function() {
             clearTimeout(fetchTimeout);
-            fetchTimeout = setTimeout(fetchRates, 200);
+            if (postcodeField.value.trim().length === 5 && this.value.trim()) {
+                fetchTimeout = setTimeout(fetchRates, 200);
+            }
         });
 
         // ── Shipping method toggle ─────────────────────────────────────────

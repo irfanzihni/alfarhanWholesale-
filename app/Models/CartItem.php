@@ -48,4 +48,23 @@ class CartItem extends Model
     {
         return $this->unit_price * $this->quantity;
     }
+
+    /**
+     * Get unit weight in kg
+     */
+    public function getUnitWeightAttribute(): float
+    {
+        if ($this->product_variation_id && $this->variation) {
+            return $this->variation->active_weight;
+        }
+        return (float) ($this->product->weight ?? 0.50);
+    }
+
+    /**
+     * Get total weight for this cart item line in kg
+     */
+    public function getItemWeightAttribute(): float
+    {
+        return $this->unit_weight * $this->quantity;
+    }
 }
