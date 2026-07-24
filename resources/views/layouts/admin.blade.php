@@ -26,7 +26,7 @@
         <div class="h-20 flex items-center justify-center border-b border-emerald-900 px-6">
             <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-2">
                 <span class="text-xl font-bold text-white tracking-tight">
-                    Sunnah<span class="text-emerald-400 font-serif">Staff</span>
+                    Alfarhan<span class="text-emerald-400 font-serif">Wholesale</span>
                 </span>
             </a>
         </div>
