@@ -37,7 +37,7 @@ class CartController extends Controller
         foreach ($cartItems as $item) {
             if ($item->is_selected) {
                 $subtotal += $item->subtotal;
-                $totalWeight += ($item->product->weight ?? 0.50) * $item->quantity;
+                $totalWeight += $item->item_weight;
             }
         }
 
@@ -192,13 +192,13 @@ class CartController extends Controller
                 ->update(['is_selected' => true]);
         }
 
-        $cartItems = CartItem::with('product')->where('user_id', $user->id)->get();
+        $cartItems = CartItem::with(['product', 'variation'])->where('user_id', $user->id)->get();
         $subtotal = 0;
         $totalWeight = 0;
         foreach ($cartItems as $item) {
             if ($item->is_selected) {
                 $subtotal += $item->subtotal;
-                $totalWeight += ($item->product->weight ?? 0.50) * $item->quantity;
+                $totalWeight += $item->item_weight;
             }
         }
 
