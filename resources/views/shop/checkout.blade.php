@@ -134,14 +134,10 @@
             <div id="courier-card" class="bg-white border border-emerald-100 rounded-2xl shadow-xs p-6 md:p-8 space-y-4">
                 <div class="flex items-center justify-between border-b border-emerald-50 pb-2">
                     <h3 class="text-lg font-bold text-emerald-950">🚚 Pilihan Kurier</h3>
-                    <button type="button" id="btn-check-courier" class="text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg transition-all flex items-center gap-1 shadow-xs">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                        </svg>
-                        Semak Kadar Kurier
-                    </button>
+                    <span id="courier-live-badge" class="hidden text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 uppercase tracking-wide">● Live</span>
+                    <span id="courier-estimate-badge" class="hidden text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 uppercase tracking-wide">⚠ Taksiran</span>
                 </div>
-                <p class="text-xs text-slate-500" id="courier-hint">Sila lengkapkan poskod (5 digit) dan negeri untuk melihat kadar kurier.</p>
+                <p class="text-xs text-slate-500" id="courier-hint">Sila lengkapkan poskod (5 digit) dan negeri — kadar kurier akan dikira secara automatik.</p>
 
                 <input type="hidden" name="shipping_courier" id="shipping_courier">
                 <input type="hidden" name="shipping_service" id="shipping_service">
@@ -265,16 +261,18 @@
         const courierList      = document.getElementById('courier-list');
         const courierLoading   = document.getElementById('courier-loading');
         const courierHint      = document.getElementById('courier-hint');
+        const liveBadge        = document.getElementById('courier-live-badge');
+        const estimateBadge    = document.getElementById('courier-estimate-badge');
 
-        const shippingCourierInput   = document.getElementById('shipping_courier');
-        const shippingServiceInput   = document.getElementById('shipping_service');
-        const shippingCostInput      = document.getElementById('shipping_cost');
-        const shippingMethodInput    = document.getElementById('shipping_method');
-        const shippingFeeRow         = document.getElementById('shipping-fee-row');
-        const shippingCourierNameSpan= document.getElementById('shipping-courier-name');
-        const shippingFeeAmountSpan  = document.getElementById('shipping-fee-amount');
-        const grandTotalTextSpan     = document.querySelector('.text-emerald-800.text-lg');
-        const checkoutSubmitBtn      = document.getElementById('checkout-submit-btn');
+        const shippingCourierInput    = document.getElementById('shipping_courier');
+        const shippingServiceInput    = document.getElementById('shipping_service');
+        const shippingCostInput       = document.getElementById('shipping_cost');
+        const shippingMethodInput     = document.getElementById('shipping_method');
+        const shippingFeeRow          = document.getElementById('shipping-fee-row');
+        const shippingCourierNameSpan = document.getElementById('shipping-courier-name');
+        const shippingFeeAmountSpan   = document.getElementById('shipping-fee-amount');
+        const grandTotalTextSpan      = document.querySelector('.text-emerald-800.text-lg');
+        const checkoutSubmitBtn       = document.getElementById('checkout-submit-btn');
 
         const radioDelivery  = document.getElementById('shipping-method-delivery');
         const radioPickup    = document.getElementById('shipping-method-pickup');
@@ -286,7 +284,8 @@
         const discount    = {{ $discount }};
         const totalWeight = {{ $totalWeight }};
 
-        let fetchTimeout = null;
+        let fetchTimeout  = null;
+        let lastFetched   = null; // track last fetched postcode+state
 
         // ── Update grand total display ─────────────────────────────────────
         function updateTotals(shippingFee) {
@@ -296,8 +295,12 @@
         }
 
         // ── Render courier cards from API response ─────────────────────────
-        function renderCouriers(rates) {
+        function renderCouriers(rates, isLive) {
             courierList.innerHTML = '';
+
+            // Toggle live vs estimate badge
+            if (liveBadge)      liveBadge.classList.toggle('hidden', !isLive);
+            if (estimateBadge)  estimateBadge.classList.toggle('hidden', isLive);
 
             if (!rates || rates.length === 0) {
                 courierList.innerHTML = '<p class="text-xs text-orange-600 col-span-2 text-center font-medium py-4">Tiada kurier tersedia untuk poskod/negeri ini. Sila semak semula maklumat alamat.</p>';
@@ -332,41 +335,47 @@
 
                 // Selection handler
                 card.querySelector('input').addEventListener('change', function () {
-                    // Reset all card borders
                     document.querySelectorAll('#courier-list label').forEach(function(l) {
                         l.classList.remove('border-emerald-500', 'bg-emerald-50');
                         l.classList.add('border-slate-200', 'bg-white');
                     });
-                    // Highlight selected card
                     card.classList.remove('border-slate-200', 'bg-white');
                     card.classList.add('border-emerald-500', 'bg-emerald-50');
 
                     const price = parseFloat(this.dataset.price);
-                    shippingCourierInput.value   = this.dataset.courier;
-                    shippingServiceInput.value   = this.dataset.service;
-                    shippingCostInput.value      = price.toFixed(2);
-                    shippingCourierNameSpan.textContent    = this.dataset.courier;
-                    shippingFeeAmountSpan.textContent      = 'RM' + price.toFixed(2);
+                    shippingCourierInput.value         = this.dataset.courier;
+                    shippingServiceInput.value         = this.dataset.service;
+                    shippingCostInput.value            = price.toFixed(2);
+                    shippingCourierNameSpan.textContent = this.dataset.courier;
+                    shippingFeeAmountSpan.textContent   = 'RM' + price.toFixed(2);
                     shippingFeeRow.classList.remove('hidden');
                     updateTotals(price);
                 });
 
                 courierList.appendChild(card);
             });
+
+            // Auto-select cheapest
+            const firstRadio = courierList.querySelector('input[type=radio]');
+            if (firstRadio) firstRadio.click();
         }
 
-        // ── Fetch live courier rates from EasyParcel ───────────────────────
+        // ── Fetch live courier rates ───────────────────────────────────────
         function fetchRates() {
             if (shippingMethodInput.value === 'self_pickup') return;
 
             const postcode = postcodeField.value.trim();
             const state    = stateField.value.trim();
+            const cacheKey = postcode + '|' + state;
 
-            // Need 5-digit postcode AND a selected state
             if (postcode.length !== 5 || !state) {
-                if (courierHint) courierHint.textContent = 'Sila lengkapkan poskod (5 digit) dan negeri untuk melihat kadar kurier.';
+                if (courierHint) courierHint.textContent = 'Sila lengkapkan poskod (5 digit) dan negeri — kadar kurier akan dikira secara automatik.';
                 return;
             }
+
+            // Don't re-fetch same postcode+state
+            if (lastFetched === cacheKey) return;
+            lastFetched = cacheKey;
 
             if (courierHint) courierHint.textContent = '';
 
@@ -374,6 +383,8 @@
             courierLoading.classList.remove('hidden');
             courierList.classList.add('hidden');
             courierList.innerHTML = '';
+            if (liveBadge)      liveBadge.classList.add('hidden');
+            if (estimateBadge)  estimateBadge.classList.add('hidden');
 
             // Reset selections
             shippingCourierInput.value = '';
@@ -393,7 +404,7 @@
                     courierList.classList.remove('hidden');
 
                     if (data.success) {
-                        renderCouriers(data.rates);
+                        renderCouriers(data.rates, data.is_live === true);
                     } else {
                         courierList.innerHTML = '<p class="text-xs text-red-600 col-span-2 text-center font-medium py-4">Ralat: ' + (data.message || 'Gagal mendapatkan kadar kurier.') + '</p>';
                     }
@@ -406,39 +417,18 @@
                 });
         }
 
-        const btnCheckCourier = document.getElementById('btn-check-courier');
-        if (btnCheckCourier) {
-            btnCheckCourier.addEventListener('click', function(e) {
-                e.preventDefault();
-                const postcode = postcodeField.value.trim();
-                const state    = stateField.value.trim();
-
-                if (postcode.length !== 5) {
-                    if (courierHint) courierHint.textContent = '⚠️ Sila masukkan poskod yang sah (5 digit).';
-                    postcodeField.focus();
-                    return;
-                }
-
-                if (!state) {
-                    if (courierHint) courierHint.textContent = '⚠️ Sila pilih negeri.';
-                    stateField.focus();
-                    return;
-                }
-
-                fetchRates();
-            });
-        }
-
-        // ── Debounced postcode listener (wait for full 5 digits) ───────────
+        // ── Debounced postcode listener ────────────────────────────────────
         postcodeField.addEventListener('input', function() {
             clearTimeout(fetchTimeout);
+            lastFetched = null; // reset cache on new input
             if (this.value.trim().length === 5 && stateField.value.trim()) {
-                fetchTimeout = setTimeout(fetchRates, 400);
+                fetchTimeout = setTimeout(fetchRates, 500);
             }
         });
 
         stateField.addEventListener('change', function() {
             clearTimeout(fetchTimeout);
+            lastFetched = null;
             if (postcodeField.value.trim().length === 5 && this.value.trim()) {
                 fetchTimeout = setTimeout(fetchRates, 200);
             }
@@ -484,6 +474,7 @@
                 });
 
                 // Auto-fetch if fields already filled
+                lastFetched = null;
                 if (postcodeField.value.trim().length === 5 && stateField.value.trim()) {
                     fetchRates();
                 }

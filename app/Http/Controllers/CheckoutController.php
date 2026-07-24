@@ -87,20 +87,29 @@ class CheckoutController extends Controller
     // AJAX Endpoint to get shipping rates
     public function getShippingRates(Request $request)
     {
-        $postcode = $request->get('postcode');
-        $state = $request->get('state');
-        $weight = $request->get('weight', 0.50);
+        $postcode = trim($request->get('postcode', ''));
+        $state    = trim($request->get('state', ''));
+        $weight   = (float) $request->get('weight', 0.50);
 
         if (!$postcode || strlen($postcode) < 5) {
-            return response()->json(['success' => false, 'message' => 'Poskod tidak sah']);
+            return response()->json(['success' => false, 'message' => 'Poskod tidak sah (mesti 5 digit).']);
         }
 
         $easyParcel = new \App\Services\EasyParcelService();
-        $rates = $easyParcel->getRates($postcode, $weight, $state);
+        $apiKey     = config('services.easyparcel.api_key') ?: env('EASYPARCEL_API_KEY');
+        $hasValidKey = !empty($apiKey) && $apiKey !== 'your-easyparcel-api-key-here';
+
+        $rates  = $easyParcel->getRates($postcode, $weight, $state);
+
+        // Detect if rates came from live API or local fallback
+        // Fallback rates always have service_id starting with 'FALLBACK-'
+        $isLive = $hasValidKey && count($rates) > 0
+                  && !str_starts_with($rates[0]['service_id'] ?? '', 'FALLBACK-');
 
         return response()->json([
             'success' => true,
-            'rates' => $rates
+            'rates'   => $rates,
+            'is_live' => $isLive,
         ]);
     }
 

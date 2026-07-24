@@ -7,7 +7,9 @@ use Illuminate\Support\Facades\Log;
 
 class EasyParcelService
 {
-    protected $apiKey;
+    protected $apiKey;       // Individual API Key (EP...)
+    protected $clientId;     // OAuth Client ID (UUID) — for future use
+    protected $clientSecret; // OAuth Client Secret (UUID) — for future use
     protected $sandbox;
     protected $apiUrl;
     protected $originPostcode;
@@ -60,22 +62,26 @@ class EasyParcelService
 
     public function __construct()
     {
-        // Support API Key, Client ID, or Client Secret from config or env
+        // Individual API Key — ONLY EASYPARCEL_API_KEY is used for EPRateCheckingBulk.
+        // CLIENT_ID / CLIENT_SECRET are OAuth credentials (different auth flow — not for rate checking).
         $this->apiKey = config('services.easyparcel.api_key')
-            ?: (config('services.easyparcel.client_secret')
-            ?: (config('services.easyparcel.client_id')
-            ?: (env('EASYPARCEL_API_KEY')
-            ?: (env('EASYPARCEL_CLIENT_SECRET')
-            ?: env('EASYPARCEL_CLIENT_ID')))));
+            ?: env('EASYPARCEL_API_KEY');
 
-        $this->sandbox = filter_var(config('services.easyparcel.sandbox', env('EASYPARCEL_SANDBOX', false)), FILTER_VALIDATE_BOOLEAN);
+        // Store OAuth credentials separately (reserved for future Connect API use)
+        $this->clientId     = config('services.easyparcel.client_id')     ?: env('EASYPARCEL_CLIENT_ID');
+        $this->clientSecret = config('services.easyparcel.client_secret') ?: env('EASYPARCEL_CLIENT_SECRET');
+
+        $this->sandbox = filter_var(
+            config('services.easyparcel.sandbox', env('EASYPARCEL_SANDBOX', false)),
+            FILTER_VALIDATE_BOOLEAN
+        );
 
         $this->originPostcode = config('services.easyparcel.origin_postcode', env('EASYPARCEL_ORIGIN_POSTCODE', '47100'));
-        $this->originCity     = config('services.easyparcel.origin_city', env('EASYPARCEL_ORIGIN_CITY', 'Puchong'));
-        $this->originState    = config('services.easyparcel.origin_state', env('EASYPARCEL_ORIGIN_STATE', 'Selangor'));
-        $this->originName     = config('services.easyparcel.origin_name', env('EASYPARCEL_ORIGIN_NAME', 'Alfarhan Trading'));
-        $this->originPhone    = config('services.easyparcel.origin_phone', env('EASYPARCEL_ORIGIN_PHONE', '0123456789'));
-        $this->originAddress  = config('services.easyparcel.origin_address', env('EASYPARCEL_ORIGIN_ADDRESS', 'No 1, Jalan Puchong, Industri Puchong'));
+        $this->originCity     = config('services.easyparcel.origin_city',     env('EASYPARCEL_ORIGIN_CITY',     'Puchong'));
+        $this->originState    = config('services.easyparcel.origin_state',    env('EASYPARCEL_ORIGIN_STATE',    'Selangor'));
+        $this->originName     = config('services.easyparcel.origin_name',     env('EASYPARCEL_ORIGIN_NAME',     'Alfarhan Trading'));
+        $this->originPhone    = config('services.easyparcel.origin_phone',    env('EASYPARCEL_ORIGIN_PHONE',    '0123456789'));
+        $this->originAddress  = config('services.easyparcel.origin_address',  env('EASYPARCEL_ORIGIN_ADDRESS',  'No 1, Jalan Puchong, Industri Puchong'));
     }
 
     /**
@@ -88,7 +94,8 @@ class EasyParcelService
     }
 
     /**
-     * Get real-time shipping rates from EasyParcel API (Live & Sandbox fallback).
+     * Get real-time shipping rates from EasyParcel API.
+     * Falls back to local rate table if API is unconfigured or unreachable.
      */
     public function getRates(string $destPostcode, float $totalWeight = 0.50, string $destState = ''): array
     {
@@ -97,17 +104,20 @@ class EasyParcelService
         $pickStateCode = $this->resolveStateCode($this->originState);
         $sendStateCode = $this->resolveStateCode($destState);
 
-        // Define API endpoints to try (Live first if not sandbox, Sandbox second, or vice versa)
-        $endpoints = [];
-        if (!$this->sandbox) {
-            $endpoints[] = 'https://connect.easyparcel.my/?ac=EPRateCheckingBulk';
-            $endpoints[] = 'http://demo.connect.easyparcel.my/?ac=EPRateCheckingBulk';
-        } else {
-            $endpoints[] = 'http://demo.connect.easyparcel.my/?ac=EPRateCheckingBulk';
-            $endpoints[] = 'https://connect.easyparcel.my/?ac=EPRateCheckingBulk';
-        }
+        // Determine API endpoints — sandbox first or live first
+        $endpoints = $this->sandbox
+            ? [
+                'http://demo.connect.easyparcel.my/?ac=EPRateCheckingBulk',
+                'https://connect.easyparcel.my/?ac=EPRateCheckingBulk',
+              ]
+            : [
+                'https://connect.easyparcel.my/?ac=EPRateCheckingBulk',
+                'http://demo.connect.easyparcel.my/?ac=EPRateCheckingBulk',
+              ];
 
-        if (!empty($this->apiKey) && $this->apiKey !== 'your-easyparcel-api-key-here') {
+        $hasKey = !empty($this->apiKey) && $this->apiKey !== 'your-easyparcel-api-key-here';
+
+        if ($hasKey) {
             $payload = [
                 'api'            => $this->apiKey,
                 'exclude_fields' => ['rates.*.pickup_point', 'rates.*.dropoff_point'],
@@ -127,44 +137,73 @@ class EasyParcelService
                 ],
             ];
 
+            Log::info('EasyParcel getRates attempt', [
+                'api_key_prefix' => substr($this->apiKey, 0, 8) . '...',
+                'sandbox'        => $this->sandbox,
+                'dest_postcode'  => $destPostcode,
+                'dest_state'     => $sendStateCode,
+                'weight'         => $totalWeight,
+            ]);
+
             foreach ($endpoints as $url) {
                 try {
-                    $response = Http::timeout(10)->asForm()->post($url, $payload);
+                    // EasyParcel requires form-encoded POST with nested arrays as PHP-style keys
+                    $response = Http::timeout(15)
+                        ->asForm()
+                        ->post($url, $payload);
+
+                    Log::info('EasyParcel HTTP response from ' . $url, [
+                        'status' => $response->status(),
+                        'body'   => substr($response->body(), 0, 500),
+                    ]);
 
                     if ($response->successful()) {
-                        $data = $response->json();
+                        $data      = $response->json();
                         $apiStatus = strtolower($data['api_status'] ?? '');
 
-                        if ($apiStatus === 'success' && isset($data['result'][0]['rates']) && count($data['result'][0]['rates']) > 0) {
+                        if ($apiStatus === 'success'
+                            && isset($data['result'][0]['rates'])
+                            && count($data['result'][0]['rates']) > 0
+                        ) {
                             $rates = [];
                             foreach ($data['result'][0]['rates'] as $rate) {
                                 $rates[] = [
-                                    'service_id'   => $rate['service_id'],
-                                    'service_name' => $rate['service_name'],
-                                    'courier_name' => $rate['courier_name'],
+                                    'service_id'   => $rate['service_id']   ?? '',
+                                    'service_name' => $rate['service_name'] ?? 'Standard Delivery',
+                                    'courier_name' => $rate['courier_name'] ?? 'Unknown',
                                     'price'        => (float) ($rate['price'] ?? 0),
-                                    'delivery'     => $rate['delivery'] ?? '-',
+                                    'delivery'     => $rate['delivery']     ?? '-',
                                     'logo'         => $rate['courier_logo'] ?? null,
                                 ];
                             }
-                            Log::info('EasyParcel API Rate Success via ' . $url, ['count' => count($rates)]);
+                            Log::info('EasyParcel live rates fetched', ['count' => count($rates), 'url' => $url]);
                             return $rates;
-                        } else {
-                            $remark = $data['error_remark'] ?? ($data['result'][0]['remarks'] ?? 'No rates returned');
-                            Log::warning('EasyParcel API response remark from ' . $url . ': ' . $remark);
                         }
+
+                        $remark = $data['error_remark']
+                            ?? ($data['result'][0]['remarks'] ?? 'No rates returned');
+                        Log::warning('EasyParcel API returned no rates from ' . $url, [
+                            'api_status'   => $apiStatus,
+                            'error_remark' => $remark,
+                            'raw'          => $data,
+                        ]);
+                    } else {
+                        Log::warning('EasyParcel HTTP error from ' . $url, ['status' => $response->status()]);
                     }
                 } catch (\Exception $e) {
                     Log::error('EasyParcel API exception for ' . $url . ': ' . $e->getMessage());
                 }
             }
+
+            Log::warning('EasyParcel: all endpoints failed, using fallback rates.');
         } else {
-            Log::info('EasyParcel API key missing or default placeholder. Using local fallback rate table.');
+            Log::info('EasyParcel: no API key configured, using fallback rates.');
         }
 
-        // Return standard local rates table if EasyParcel API key is unconfigured or fails
+        // Return local fallback table when API is unavailable
         return $this->getFallbackRates($destPostcode, $totalWeight, $destState);
     }
+
 
     /**
      * Book a shipment order on EasyParcel.
