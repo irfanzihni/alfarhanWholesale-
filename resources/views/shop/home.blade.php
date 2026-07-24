@@ -69,7 +69,7 @@
     @endif
 @endauth
 
-<!-- Categories Grid -->
+<!-- Categories Grid 
 <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
     <div class="text-center max-w-xl mx-auto mb-12">
         <h2 class="text-3xl font-extrabold text-emerald-950 serif-font">Browse Blessed Categories</h2>
@@ -77,37 +77,33 @@
     </div>
 
     <div class="grid grid-cols-2 md:grid-cols-5 gap-6">
-        <!-- Dates Category -->
-        <a href="{{ route('shop.index', ['category' => 'dates']) }}" class="group bg-white border border-emerald-100 hover:border-emerald-500 rounded-2xl p-6 text-center shadow-xs transition-all hover:shadow-md hover:-translate-y-1">
+
+       <a href="{{ route('shop.index', ['category' => 'dates']) }}" class="group bg-white border border-emerald-100 hover:border-emerald-500 rounded-2xl p-6 text-center shadow-xs transition-all hover:shadow-md hover:-translate-y-1">
             <div class="w-16 h-16 mx-auto rounded-full bg-emerald-50 flex items-center justify-center text-emerald-700 font-bold mb-4 group-hover:bg-emerald-700 group-hover:text-white transition-all">🌴</div>
             <h4 class="font-bold text-slate-800 text-sm">Dates</h4>
         </a>
 
-        <!-- Honey Category -->
         <a href="{{ route('shop.index', ['category' => 'honey']) }}" class="group bg-white border border-emerald-100 hover:border-emerald-500 rounded-2xl p-6 text-center shadow-xs transition-all hover:shadow-md hover:-translate-y-1">
             <div class="w-16 h-16 mx-auto rounded-full bg-emerald-50 flex items-center justify-center text-emerald-700 font-bold mb-4 group-hover:bg-emerald-700 group-hover:text-white transition-all">🍯</div>
             <h4 class="font-bold text-slate-800 text-sm">Honey</h4>
         </a>
 
-        <!-- Perfume Category -->
         <a href="{{ route('shop.index', ['category' => 'perfume']) }}" class="group bg-white border border-emerald-100 hover:border-emerald-500 rounded-2xl p-6 text-center shadow-xs transition-all hover:shadow-md hover:-translate-y-1">
             <div class="w-16 h-16 mx-auto rounded-full bg-emerald-50 flex items-center justify-center text-emerald-700 font-bold mb-4 group-hover:bg-emerald-700 group-hover:text-white transition-all">🌸</div>
             <h4 class="font-bold text-slate-800 text-sm">Perfume</h4>
         </a>
 
-        <!-- Bakhoor Category -->
         <a href="{{ route('shop.index', ['category' => 'bakhoor']) }}" class="group bg-white border border-emerald-100 hover:border-emerald-500 rounded-2xl p-6 text-center shadow-xs transition-all hover:shadow-md hover:-translate-y-1">
             <div class="w-16 h-16 mx-auto rounded-full bg-emerald-50 flex items-center justify-center text-emerald-700 font-bold mb-4 group-hover:bg-emerald-700 group-hover:text-white transition-all">🪔</div>
             <h4 class="font-bold text-slate-800 text-sm">Bakhoor</h4>
         </a>
 
-        <!-- Others Category -->
         <a href="{{ route('shop.index', ['category' => 'others']) }}" class="group bg-white border border-emerald-100 hover:border-emerald-500 rounded-2xl p-6 text-center shadow-xs transition-all hover:shadow-md hover:-translate-y-1 col-span-2 md:col-span-1">
             <div class="w-16 h-16 mx-auto rounded-full bg-emerald-50 flex items-center justify-center text-emerald-700 font-bold mb-4 group-hover:bg-emerald-700 group-hover:text-white transition-all">🛍️</div>
             <h4 class="font-bold text-slate-800 text-sm">Others</h4>
         </a>
     </div>
-</section>
+</section>-->
 
 <!-- Featured Products Section -->
 <section id="featured-products" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 border-t border-emerald-100/60 bg-emerald-50/20">
